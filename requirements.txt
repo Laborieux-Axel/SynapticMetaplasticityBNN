@@ -94,7 +94,6 @@ pyqt=5.9.2=py37hcca6a23_4
 pysocks=1.7.1=py37_0
 python=3.7.6=h0371630_2
 python-dateutil=2.8.1=py_0
-pytorch=1.1.0=py3.7_cuda10.0.130_cudnn7.5.1_0
 pytz=2019.3=py_0
 pyyaml=5.3=py37h516909a_0
 qt=5.9.7=h5867ecd_1
@@ -114,7 +113,6 @@ tensorflow-estimator=2.1.0=pyhd54b08b_0
 termcolor=1.1.0=py_2
 theano=1.0.4=py37he1b5a44_1001
 tk=8.6.8=hbc83047_0
-torchvision=0.3.0=py37_cu10.0.130_1
 tornado=6.0.3=py37h516909a_0
 urllib3=1.25.7=py37_0
 werkzeug=1.0.0=py_0
