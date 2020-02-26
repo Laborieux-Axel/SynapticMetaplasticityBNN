@@ -5,6 +5,8 @@ This repository contains the code producing the figures of the paper Synaptic Me
 
 In each folder except Quadratic Binary Task, model_utils.py contains all classes and functions relevant to the model architectures and the train/test phase.
 data_utils.py contains functions relevant to data management. All the simulations produce csv file with accuracies and losses tracked at every epoch.  
+The code for BNN was adapted from https://github.com/itayhubara/BinaryNet.pytorch  
+The code for EWC was adapted from https://github.com/GMvandeVen/continual-learning  
 
 ## Continual Learning.
 
