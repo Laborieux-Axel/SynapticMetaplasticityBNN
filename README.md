@@ -12,7 +12,7 @@ The code for EWC was adapted from https://github.com/GMvandeVen/continual-learni
 
 #### BNN with increasing metaplasticity.  
 
-These runs produce the data of Fig. 2 (a), (b), (c), (d), (e).  To obtain the data of Fig. 2(g), (h), lines XX in main.py need to be uncommented.  
+These runs produce the data of Fig. 2 (a), (b), (c), (d), (e).  To obtain the data of Fig. 2(g), (h), lines 170-172 in main.py need to be uncommented.  
 
 > python main.py --net bnn --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.0 --epochs-per-task 40 --task-sequence pMNIST pMNIST pMNIST pMNIST pMNIST pMNIST  
 > python main.py --net bnn --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.5 --epochs-per-task 40 --task-sequence pMNIST pMNIST pMNIST pMNIST pMNIST pMNIST  
