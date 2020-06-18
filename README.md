@@ -1,6 +1,6 @@
 # Synaptic Metaplasticity in Binarized Neural Networks
 
-This repository contains the code producing the figures of the [paper](https://arxiv.org/abs/2003.03533) "Synaptic Metaplasticity in Binarized Neural Networks" (BNNs). To set the environment run in your conda main environment:  
+This repository contains the code producing the figures of the __[paper](https://arxiv.org/abs/2003.03533)__ "Synaptic Metaplasticity in Binarized Neural Networks" (BNNs). To set the environment run in your conda main environment:  
 ```
 conda config --add channels conda-forge  
 conda create --name environment_name --file requirements.txt  
@@ -10,8 +10,8 @@ conda install pytorch==1.1.0 torchvision==0.3.0 -c pytorch
 
 In each folder except Quadratic Binary Task, model_utils.py contains all classes and functions relevant to the model architectures and the train/test phase.
 data_utils.py contains functions relevant to data management. All the simulations produce csv file with accuracies and losses tracked at every epoch.  
-The code for BNN modules was adapted from https://github.com/itayhubara/BinaryNet.pytorch  
-The code for EWC was adapted from https://github.com/GMvandeVen/continual-learning  
+The code for BNN modules was adapted from [this repo](https://github.com/itayhubara/BinaryNet.pytorch).  
+The code for EWC was adapted from [this repo](https://github.com/GMvandeVen/continual-learning).  
 
 ## Continual Learning
 
