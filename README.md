@@ -1,6 +1,6 @@
 # Synaptic Metaplasticity in Binarized Neural Networks
 
-This repository contains the code producing the figures of the paper Synaptic Metaplasticity in Binarized Neural Networks (BNN). To set the environment run in your conda main environment:  
+This repository contains the code producing the figures of the [paper](https://arxiv.org/abs/2003.03533) "Synaptic Metaplasticity in Binarized Neural Networks" (BNNs). To set the environment run in your conda main environment:  
 ```
 conda config --add channels conda-forge  
 conda create --name environment_name --file requirements.txt  
