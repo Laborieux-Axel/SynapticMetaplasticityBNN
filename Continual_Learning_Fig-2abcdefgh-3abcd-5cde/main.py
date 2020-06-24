@@ -23,6 +23,7 @@ parser.add_argument('--net', type = str, default = 'bnn', metavar = 'NT', help='
 parser.add_argument('--hidden-layers', nargs = '+', type = int, default = [1024,1024], metavar = 'HL', help='size of the hidden layers')
 parser.add_argument('--task-sequence', nargs = '+', type = str, default = ['MNIST'], metavar = 'TS', help='Sequence of tasks to learn')
 parser.add_argument('--lr', type = float, default = 0.005, metavar = 'LR', help='Learning rate')
+parser.add_argument('--gamma', type = float, default = 10.0, metavar = 'G', help='dividing factor for lr decay')
 parser.add_argument('--epochs-per-task', type = int, default = 5, metavar = 'EPT', help='Number of epochs per tasks')
 parser.add_argument('--norm', type = str, default = 'bn', metavar = 'Nrm', help='Normalization procedure')
 parser.add_argument('--meta', type = float, default = 0.0, metavar = 'M', help='Metaplasticity coefficient')
@@ -125,9 +126,11 @@ for t in range(len(task_names)):
 
 bn_states = []
 
+lrs = [lr*(args.gamma**(-i-1)) for i in range(len(args.task_sequence))]
+
 for task_idx, task in enumerate(train_loader_list):
 
-    optimizer = Adam_meta(model.parameters(), lr = lr, meta = meta, weight_decay = args.decay)
+    optimizer = Adam_meta(model.parameters(), lr = lrs[task_idx], meta = meta, weight_decay = args.decay)
     
     for epoch in range(1, epochs+1):
 
@@ -136,7 +139,7 @@ for task_idx, task in enumerate(train_loader_list):
         data['task_order'].append(task_idx+1)
         data['tsk'].append(task_names[task_idx])
         data['epoch'].append(epoch)
-        data['lr'].append(lr)
+        data['lr'].append(optimizer.param_groups[0]['lr'])
 
         train_accuracy, train_loss = test(model, task, device)
         
