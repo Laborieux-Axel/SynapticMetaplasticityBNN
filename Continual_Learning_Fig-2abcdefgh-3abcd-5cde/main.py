@@ -126,7 +126,7 @@ for t in range(len(task_names)):
 
 bn_states = []
 
-lrs = [lr*(args.gamma**(-i-1)) for i in range(len(args.task_sequence))]
+lrs = [lr*(args.gamma**(-i)) for i in range(len(args.task_sequence))]
 
 for task_idx, task in enumerate(train_loader_list):
 
