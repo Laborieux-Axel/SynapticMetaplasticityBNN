@@ -23,7 +23,7 @@ parser.add_argument('--net', type = str, default = 'bnn', metavar = 'NT', help='
 parser.add_argument('--hidden-layers', nargs = '+', type = int, default = [1024,1024], metavar = 'HL', help='size of the hidden layers')
 parser.add_argument('--task-sequence', nargs = '+', type = str, default = ['MNIST'], metavar = 'TS', help='Sequence of tasks to learn')
 parser.add_argument('--lr', type = float, default = 0.005, metavar = 'LR', help='Learning rate')
-parser.add_argument('--gamma', type = float, default = 10.0, metavar = 'G', help='dividing factor for lr decay')
+parser.add_argument('--gamma', type = float, default = 1.0, metavar = 'G', help='dividing factor for lr decay')
 parser.add_argument('--epochs-per-task', type = int, default = 5, metavar = 'EPT', help='Number of epochs per tasks')
 parser.add_argument('--norm', type = str, default = 'bn', metavar = 'Nrm', help='Normalization procedure')
 parser.add_argument('--meta', type = float, default = 0.0, metavar = 'M', help='Metaplasticity coefficient')
@@ -32,6 +32,7 @@ parser.add_argument('--decay', type = float, default = 0.0, metavar = 'dc', help
 parser.add_argument('--init', type = str, default = 'uniform', metavar = 'INIT', help='Weight initialisation')
 parser.add_argument('--init-width', type = float, default = 0.1, metavar = 'W', help='Weight initialisation width')
 parser.add_argument('--save', type = bool, default = True, metavar = 'S', help='Saving the results')
+parser.add_argument('--beaker', default = False, action = 'store_true', help='use beaker')
 parser.add_argument('--device', type = int, default = 0, metavar = 'Dev', help='choice of gpu')
 parser.add_argument('--seed', type = int, default = 0, metavar = 'seed', help='seed for reproductibility')
 
@@ -44,7 +45,7 @@ np.random.seed(args.seed)
 
 date = datetime.now().strftime('%Y-%m-%d')
 time = datetime.now().strftime('%H-%M-%S')
-path = 'results/'+date+'/'+time
+path = 'results/'+date+'/'+time+'_gpu'+str(args.device)
 if not(os.path.exists(path)):
     os.makedirs(path)
 
@@ -128,10 +129,15 @@ bn_states = []
 
 lrs = [lr*(args.gamma**(-i)) for i in range(len(args.task_sequence))]
 
-for task_idx, task in enumerate(train_loader_list):
 
-    optimizer = Adam_meta(model.parameters(), lr = lrs[task_idx], meta = meta, weight_decay = args.decay)
-    
+if args.beaker:
+    optimizer = Adam_bk(model.parameters(), lr = lr, n_bk=4, ratios=[1e-2,1e-3,1e-4,1e-6], feedback=5e-3, meta=meta, weight_decay=args.decay, path=path)
+
+
+for task_idx, task in enumerate(train_loader_list):
+    if not(args.beaker):
+        optimizer = Adam_meta(model.parameters(), lr = lrs[task_idx], meta = meta, weight_decay = args.decay)
+           
     for epoch in range(1, epochs+1):
 
         train(model, task, task_idx, optimizer, device, previous_tasks_fisher, previous_tasks_parameters, ewc_lambda) 

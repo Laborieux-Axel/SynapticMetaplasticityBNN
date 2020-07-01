@@ -66,6 +66,7 @@ def createHyperparametersFile(path, args):
         "- lr: {}".format(args.lr) + "\n",
         "- gamma: {}".format(args.gamma) + "\n",
         "- meta: {}".format(args.meta) + "\n",
+        "- beaker: {}".format(args.beaker) + "\n",
         "- ewc lambda: {}".format(args.ewc_lambda) + "\n",
         "- decay: {}".format(args.decay) + "\n",
         "- epochs per task: {}".format(args.epochs_per_task) + "\n",
