@@ -33,6 +33,9 @@ parser.add_argument('--init', type = str, default = 'uniform', metavar = 'INIT',
 parser.add_argument('--init-width', type = float, default = 0.1, metavar = 'W', help='Weight initialisation width')
 parser.add_argument('--save', type = bool, default = True, metavar = 'S', help='Saving the results')
 parser.add_argument('--beaker', default = False, action = 'store_true', help='use beaker')
+parser.add_argument('--fb', type = float, default = 5e-3, metavar = 'fb', help='feeback coeff from last beaker to the first')
+parser.add_argument('--n-bk', type = int, default = 4, metavar = 'bk', help='number of beakers')
+parser.add_argument('--ratios', nargs = '+', type = float, default = [1e-2,1e-3,1e-4,1e-5], metavar = 'Ra', help='pipes specs between beakers')
 parser.add_argument('--device', type = int, default = 0, metavar = 'Dev', help='choice of gpu')
 parser.add_argument('--seed', type = int, default = 0, metavar = 'seed', help='seed for reproductibility')
 
@@ -131,7 +134,7 @@ lrs = [lr*(args.gamma**(-i)) for i in range(len(args.task_sequence))]
 
 
 if args.beaker:
-    optimizer = Adam_bk(model.parameters(), lr = lr, n_bk=4, ratios=[1e-2,1e-3,1e-4,1e-6], feedback=5e-3, meta=meta, weight_decay=args.decay, path=path)
+    optimizer = Adam_bk(model.parameters(), lr = lr, n_bk=args.n_bk, ratios=args.ratios, feedback=args.fb, meta=meta, weight_decay=args.decay, path=path)
 
 
 for task_idx, task in enumerate(train_loader_list):
