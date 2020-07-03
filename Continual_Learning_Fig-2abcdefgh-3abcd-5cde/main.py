@@ -37,14 +37,15 @@ parser.add_argument('--fb', type = float, default = 5e-3, metavar = 'fb', help='
 parser.add_argument('--n-bk', type = int, default = 4, metavar = 'bk', help='number of beakers')
 parser.add_argument('--ratios', nargs = '+', type = float, default = [1e-2,1e-3,1e-4,1e-5], metavar = 'Ra', help='pipes specs between beakers')
 parser.add_argument('--device', type = int, default = 0, metavar = 'Dev', help='choice of gpu')
-parser.add_argument('--seed', type = int, default = 0, metavar = 'seed', help='seed for reproductibility')
+parser.add_argument('--seed', type = int, default = None, metavar = 'seed', help='seed for reproductibility')
 
 args = parser.parse_args()
 
 device = torch.device("cuda:"+str(args.device) if torch.cuda.is_available() else "cpu")
 
-torch.manual_seed(args.seed)
-np.random.seed(args.seed)
+if args.seed is not None:
+    torch.manual_seed(args.seed)
+    np.random.seed(args.seed)
 
 date = datetime.now().strftime('%Y-%m-%d')
 time = datetime.now().strftime('%H-%M-%S')
