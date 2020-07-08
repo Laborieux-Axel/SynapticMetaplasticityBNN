@@ -27,7 +27,11 @@ parser.add_argument('--gamma', type = float, default = 1.0, metavar = 'G', help=
 parser.add_argument('--epochs-per-task', type = int, default = 5, metavar = 'EPT', help='Number of epochs per tasks')
 parser.add_argument('--norm', type = str, default = 'bn', metavar = 'Nrm', help='Normalization procedure')
 parser.add_argument('--meta', type = float, default = 0.0, metavar = 'M', help='Metaplasticity coefficient')
+parser.add_argument('--rnd-consolidation', default = False, action = 'store_true', help='use shuffled Elastic Weight Consolidation')
 parser.add_argument('--ewc-lambda', type = float, default = 0.0, metavar = 'Lbd', help='EWC coefficient')
+parser.add_argument('--ewc', default = False, action = 'store_true', help='use Elastic Weight Consolidation')
+parser.add_argument('--si-lambda', type = float, default = 0.0, metavar = 'Lbd', help='SI coefficient')
+parser.add_argument('--si', default = False, action = 'store_true', help='use Synaptic Intelligence (SI)')
 parser.add_argument('--decay', type = float, default = 0.0, metavar = 'dc', help='Weight decay')
 parser.add_argument('--init', type = str, default = 'uniform', metavar = 'INIT', help='Weight initialisation')
 parser.add_argument('--init-width', type = float, default = 0.1, metavar = 'W', help='Weight initialisation width')
@@ -86,6 +90,7 @@ epochs = args.epochs_per_task
 save_result = args.save
 meta = args.meta
 ewc_lambda = args.ewc_lambda
+si_lambda = args.si_lambda
 archi = [784] + args.hidden_layers + [10]
 
 if args.net =='bnn':
@@ -100,12 +105,28 @@ previous_tasks_parameters = {}
 previous_tasks_fisher = {}
 
 # ewc parameters initialization
-for n, p in model.named_parameters():
-    if n.find('bn') == -1: #we dont store bn parameters as we allow task dependent bn
-        n = n.replace('.', '__')
-        previous_tasks_fisher[n] = []
-        previous_tasks_parameters[n] = [] 
-
+if args.ewc:
+    for n, p in model.named_parameters():
+        if n.find('bn') == -1: #we dont store bn parameters as we allow task dependent bn
+            n = n.replace('.', '__')
+            previous_tasks_fisher[n] = []
+            previous_tasks_parameters[n] = [] 
+elif args.si:
+    W = {}
+    p_prev = {}
+    p_old = {}
+    omega = {}
+    for n, p in model.named_parameters():
+        if p.requires_grad:
+            n = n.replace('.', '__')
+            W[n] = p.data.clone().zero_()
+            omega[n] = p.data.clone().zero_()
+            if args.net=='bnn':
+                p_prev[n] = p.data.sign().clone()
+                p_old[n] = p.data.sign().clone()
+            elif args.net=='dnn':
+                p_prev[n] = p.data.clone()
+                p_old[n] = p.data.clone()
 
 # Data collect initialisation
 data = {}
@@ -117,7 +138,7 @@ for i in range(model.hidden_layers):
 
 data['arch'] = arch[1:]
 data['norm'] = args.norm
-data['lr'], data['meta'], data['ewc'], data['task_order'] = [], [], [], []  
+data['lr'], data['meta'], data['ewc'], data['SI'], data['task_order'] = [], [], [], [], []  
 data['tsk'], data['epoch'], data['acc_tr'], data['loss_tr'] = [], [], [], []
 
 
@@ -143,9 +164,15 @@ for task_idx, task in enumerate(train_loader_list):
         optimizer = Adam_meta(model.parameters(), lr = lrs[task_idx], meta = meta, weight_decay = args.decay)
            
     for epoch in range(1, epochs+1):
+        
+        if args.ewc:
+            train(model, task, task_idx, optimizer, device, args, prev_cons=previous_tasks_fisher, 
+                    prev_params=previous_tasks_parameters) 
+        elif args.si:
+            train(model, task, task_idx, optimizer, device, args, prev_cons=omega, path_integ=W, prev_params=(p_prev, p_old) ) 
+        else:
+            train(model, task, task_idx, optimizer, device, args)
 
-        train(model, task, task_idx, optimizer, device, previous_tasks_fisher, previous_tasks_parameters, ewc_lambda) 
-    
         data['task_order'].append(task_idx+1)
         data['tsk'].append(task_names[task_idx])
         data['epoch'].append(epoch)
@@ -157,6 +184,7 @@ for task_idx, task in enumerate(train_loader_list):
         data['loss_tr'].append(train_loss)
         data['meta'].append(meta)
         data['ewc'].append(ewc_lambda)
+        data['SI'].append(si_lambda)
 
         current_bn_state = model.save_bn_states()
         
@@ -185,19 +213,27 @@ for task_idx, task in enumerate(train_loader_list):
     #    torch.save(model.layers['fc'+str(l+1)].weight.org.data, path+'/'+time+'_weights_fc'+str(l+1)+'.pt')
     
     bn_states.append(current_bn_state)
+    if args.ewc:
+        fisher = estimate_fisher(model, dset_train_list[task_idx], device, empirical=False)
+        for n, p in model.named_parameters():
+            if n.find('bn') == -1: # not batchnorm
+                n = n.replace('.', '__')
+            
+                # random consolidation
+                if args.rnd_consolidation:
+                    idx = torch.randperm(fisher[n].nelement())
+                    previous_tasks_fisher[n].append(fisher[n].view(-1)[idx].view(fisher[n].size()))
+            
+                # EWC consolidation, comment when using random consolidation
+                previous_tasks_fisher[n].append(fisher[n])
+                previous_tasks_parameters[n].append(p.detach().clone())
 
-    fisher = estimate_fisher(model, dset_train_list[task_idx], device, empirical=False)
-    for n, p in model.named_parameters():
-        if n.find('bn') == -1: # not batchnorm
-            n = n.replace('.', '__')
-            
-            # uncomment for random consolidation
-            #idx = torch.randperm(fisher[n].nelement())
-            #previous_tasks_fisher[n].append(fisher[n].view(-1)[idx].view(fisher[n].size()))
-            
-            # EWC consolidation, comment when using random consolidation
-            previous_tasks_fisher[n].append(fisher[n])
-            previous_tasks_parameters[n].append(p.detach().clone())
+    elif args.si:
+        omega = update_omega(model, omega, p_prev, W)
+        for n, p in model.named_parameters():
+            if n.find('bn') == -1: # not batchnorm
+                n = n.replace('.','__')
+                p_prev[n] = p.detach().clone()
 
 
 time = datetime.now().strftime('%H-%M-%S')

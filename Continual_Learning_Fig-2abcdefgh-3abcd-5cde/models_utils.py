@@ -451,8 +451,8 @@ class Adam_bk(torch.optim.Optimizer):
 
 
 
-def train(model, train_loader, current_task_index, optimizer, device,
-          previous_tasks_fisher, previous_tasks_parameters, ewc_lambda, criterion = torch.nn.CrossEntropyLoss()):
+def train(model, train_loader, current_task_index, optimizer, device, args,
+          prev_cons=None, prev_params=None, path_integ=None, criterion = torch.nn.CrossEntropyLoss()):
     
     model.train()
 
@@ -464,10 +464,13 @@ def train(model, train_loader, current_task_index, optimizer, device,
         
         output = model(data)
         loss = criterion(output, target)
-        if ewc_lambda > 0.0:
-            ewc_loss = EWC_loss(model, previous_tasks_fisher, previous_tasks_parameters, current_task_index, device, ewc_lambda=ewc_lambda)
-            #print('ewc_loss =', ewc_loss)
+        if args.ewc:
+            ewc_loss = EWC_loss(model, prev_cons, prev_params, current_task_index, device, ewc_lambda=args.ewc_lambda)
             total_loss = loss + ewc_loss
+        elif args.si:
+            p_prev, p_old = prev_params
+            si_loss = SI_loss(model, prev_cons, p_prev, args.si_lambda)
+            total_loss = loss + si_loss
         else:
             total_loss = loss        
 
@@ -479,6 +482,9 @@ def train(model, train_loader, current_task_index, optimizer, device,
                 p.data.copy_(p.org)
                 
         optimizer.step()
+
+        if args.si:
+            update_W(model, path_integ, p_old)
         
         # This loop is only for BNN parameters as they have 'org' attribute
         for p in list(model.parameters()):  # updating the org attribute
@@ -574,6 +580,44 @@ def EWC_loss(model, previous_tasks_fisher, previous_tasks_parameters, current_ta
                     losses.append((fisher * (p-mean)**2).sum())
         return ewc_lambda*(1./2)*sum(losses)
 
+
+def update_omega(model, omega, p_prev, W, epsilon=1e-3):
+    for n, p in model.named_parameters():
+        if n.find('bn') == -1: # not batchnorm
+            if p.requires_grad:
+                n = n.replace('.', '__')
+                if isinstance(model, BNN):
+                    p_current = p.sign().detach().clone()
+                else:
+                    p_current = p.detach().clone()
+                p_change = p_current - p_prev[n]
+                omega_add = W[n]/(p_change**2 + epsilon)
+                omega[n] += omega_add
+                W[n] = p.data.clone().zero_()
+    return omega
+
+def update_W(model, W, p_old):
+    for n, p in model.named_parameters():
+        if p.requires_grad and (n.find('bn')==-1):
+            n = n.replace('.', '__')
+            if p.grad is not None:
+                if isinstance(model, BNN):
+                    W[n].add_(-p.grad*(p.sign().detach()-p_old[n]))
+                else:
+                    W[n].add_(-p.grad*(p.detach()-p_old[n]))
+            if isinstance(model, BNN): 
+                p_old[n] = p.sign().detach().clone()
+            else:
+                p_old[n] = p.detach().clone()
+               
+
+def SI_loss(model, omega, prev_params, si_lambda):
+    losses = []
+    for n, p in model.named_parameters():
+        if p.requires_grad and (n.find('bn')==-1):
+            n = n.replace('.', '__')
+            losses.append((omega[n] * (p-prev_params[n])**2).sum())
+    return si_lambda*sum(losses)
 
 
 
