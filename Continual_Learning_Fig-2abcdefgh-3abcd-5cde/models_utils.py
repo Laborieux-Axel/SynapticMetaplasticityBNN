@@ -158,6 +158,7 @@ class DNN(torch.nn.Module):
             x = self.layers['bn'+str(layer+1)](x)
             if layer != self.hidden_layers:
                 x = torch.tanh(x)
+                #x = torch.nn.functional.relu(x)
         return x
 
     def save_bn_states(self):
@@ -581,13 +582,13 @@ def EWC_loss(model, previous_tasks_fisher, previous_tasks_parameters, current_ta
         return ewc_lambda*(1./2)*sum(losses)
 
 
-def update_omega(model, omega, p_prev, W, epsilon=1e-3):
+def update_omega(model, omega, p_prev, W, epsilon=0.1):
     for n, p in model.named_parameters():
         if n.find('bn') == -1: # not batchnorm
             if p.requires_grad:
                 n = n.replace('.', '__')
                 if isinstance(model, BNN):
-                    p_current = p.sign().detach().clone()
+                    p_current = p.org.detach().clone()   # sign()
                 else:
                     p_current = p.detach().clone()
                 p_change = p_current - p_prev[n]
@@ -602,11 +603,11 @@ def update_W(model, W, p_old):
             n = n.replace('.', '__')
             if p.grad is not None:
                 if isinstance(model, BNN):
-                    W[n].add_(-p.grad*(p.sign().detach()-p_old[n]))
+                    W[n].add_(-p.grad*(p.org.detach()-p_old[n]))  # org or sign()
                 else:
                     W[n].add_(-p.grad*(p.detach()-p_old[n]))
             if isinstance(model, BNN): 
-                p_old[n] = p.sign().detach().clone()
+                p_old[n] = p.org.detach().clone()   # org or sign()
             else:
                 p_old[n] = p.detach().clone()
                
@@ -616,7 +617,10 @@ def SI_loss(model, omega, prev_params, si_lambda):
     for n, p in model.named_parameters():
         if p.requires_grad and (n.find('bn')==-1):
             n = n.replace('.', '__')
-            losses.append((omega[n] * (p-prev_params[n])**2).sum())
+            if isinstance(model, BNN):
+                losses.append((omega[n] * (p.org - prev_params[n])**2).sum())
+            else:
+                losses.append((omega[n] * (p-prev_params[n])**2).sum())
     return si_lambda*sum(losses)
 
 

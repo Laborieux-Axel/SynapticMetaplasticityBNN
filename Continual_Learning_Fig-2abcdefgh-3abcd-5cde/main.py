@@ -122,8 +122,8 @@ elif args.si:
             W[n] = p.data.clone().zero_()
             omega[n] = p.data.clone().zero_()
             if args.net=='bnn':
-                p_prev[n] = p.data.sign().clone()
-                p_old[n] = p.data.sign().clone()
+                p_prev[n] = p.data.clone()   # sign()
+                p_old[n] = p.data.clone()   # sign()
             elif args.net=='dnn':
                 p_prev[n] = p.data.clone()
                 p_old[n] = p.data.clone()
@@ -157,10 +157,11 @@ lrs = [lr*(args.gamma**(-i)) for i in range(len(args.task_sequence))]
 
 if args.beaker:
     optimizer = Adam_bk(model.parameters(), lr = lr, n_bk=args.n_bk, ratios=args.ratios, feedback=args.fb, meta=meta, weight_decay=args.decay, path=path)
-
+if args.si:
+    optimizer = torch.optim.Adam(model.parameters(), lr = lr, weight_decay = args.decay)
 
 for task_idx, task in enumerate(train_loader_list):
-    if not(args.beaker):
+    if not(args.beaker or args.si):
         optimizer = Adam_meta(model.parameters(), lr = lrs[task_idx], meta = meta, weight_decay = args.decay)
            
     for epoch in range(1, epochs+1):
@@ -233,7 +234,10 @@ for task_idx, task in enumerate(train_loader_list):
         for n, p in model.named_parameters():
             if n.find('bn') == -1: # not batchnorm
                 n = n.replace('.','__')
-                p_prev[n] = p.detach().clone()
+                if args.net=='bnn':
+                    p_prev[n] = p.org.detach().clone()  # or sign
+                else:
+                    p_prev[n] = p.detach().clone()
 
 
 time = datetime.now().strftime('%H-%M-%S')
