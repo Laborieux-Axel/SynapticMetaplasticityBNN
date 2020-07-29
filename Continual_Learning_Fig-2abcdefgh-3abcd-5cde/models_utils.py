@@ -429,7 +429,7 @@ class Adam_bk(torch.optim.Optimizer):
                     else:
                         state['bk'+str(bk_idx)+'_t-1'] = state['bk'+str(bk_idx)+'_t'] 
                     
-                    if p.size() == torch.empty(1024,1024).size():
+                    if p.size() == torch.empty(4096,4096).size() :
                         state['bk'+str(bk_idx)+'_lvl'].append(state['bk'+str(bk_idx)+'_t-1'][11, 100].detach().item())
                         if state['step']%600==0:
                             plt.plot(state['bk'+str(bk_idx)+'_lvl'])
@@ -442,6 +442,7 @@ class Adam_bk(torch.optim.Optimizer):
                         plt.hist(state['bk'+str(bk_idx)+'_t-1'].detach().cpu().numpy().flatten(), 100, label='bk'+str(bk_idx), alpha=0.5)
                     plt.legend()
                     fig2.savefig(path+'/bk_'+str(bk_idx)+'_'+str(p.size(0))+'-'+str(p.size(1))+'.png', fmt='png')
+                    torch.save(state, path + '/state_'+str(p.size(0))+'-'+str(p.size(1))+'.tar')
                     plt.close()   
                 
                 
@@ -485,7 +486,7 @@ def train(model, train_loader, current_task_index, optimizer, device, args,
         optimizer.step()
 
         if args.si:
-            update_W(model, path_integ, p_old)
+            update_W(model, path_integ, p_old, args)
         
         # This loop is only for BNN parameters as they have 'org' attribute
         for p in list(model.parameters()):  # updating the org attribute
@@ -588,7 +589,7 @@ def update_omega(model, omega, p_prev, W, epsilon=0.1):
             if p.requires_grad:
                 n = n.replace('.', '__')
                 if isinstance(model, BNN):
-                    p_current = p.org.detach().clone()   # sign()
+                    p_current = p.sign().detach().clone()   # sign()
                 else:
                     p_current = p.detach().clone()
                 p_change = p_current - p_prev[n]
@@ -597,17 +598,23 @@ def update_omega(model, omega, p_prev, W, epsilon=0.1):
                 W[n] = p.data.clone().zero_()
     return omega
 
-def update_W(model, W, p_old):
+def update_W(model, W, p_old, args):
     for n, p in model.named_parameters():
         if p.requires_grad and (n.find('bn')==-1):
             n = n.replace('.', '__')
             if p.grad is not None:
                 if isinstance(model, BNN):
-                    W[n].add_(-p.grad*(p.org.detach()-p_old[n]))  # org or sign()
+                    if args.bin_path:
+                        W[n].add_(-p.grad*(p.sign().detach()-p_old[n])) 
+                    else:
+                        W[n].add_(-p.grad*(p.org.detach()-p_old[n]))
                 else:
                     W[n].add_(-p.grad*(p.detach()-p_old[n]))
             if isinstance(model, BNN): 
-                p_old[n] = p.org.detach().clone()   # org or sign()
+                if args.bin_path:
+                    p_old[n] = p.sign().detach().clone() 
+                else:
+                    p_old[n] = p.org.detach().clone() 
             else:
                 p_old[n] = p.detach().clone()
                
@@ -618,9 +625,9 @@ def SI_loss(model, omega, prev_params, si_lambda):
         if p.requires_grad and (n.find('bn')==-1):
             n = n.replace('.', '__')
             if isinstance(model, BNN):
-                losses.append((omega[n] * (p.org - prev_params[n])**2).sum())
+                losses.append((omega[n] * (p - prev_params[n])**2).sum())  #org or sign
             else:
-                losses.append((omega[n] * (p-prev_params[n])**2).sum())
+                losses.append((omega[n] * (p - prev_params[n])**2).sum())
     return si_lambda*sum(losses)
 
 

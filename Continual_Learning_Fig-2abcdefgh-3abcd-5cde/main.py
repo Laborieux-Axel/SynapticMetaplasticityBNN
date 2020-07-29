@@ -32,6 +32,7 @@ parser.add_argument('--ewc-lambda', type = float, default = 0.0, metavar = 'Lbd'
 parser.add_argument('--ewc', default = False, action = 'store_true', help='use Elastic Weight Consolidation')
 parser.add_argument('--si-lambda', type = float, default = 0.0, metavar = 'Lbd', help='SI coefficient')
 parser.add_argument('--si', default = False, action = 'store_true', help='use Synaptic Intelligence (SI)')
+parser.add_argument('--bin-path', default = False, action = 'store_true', help='path integral on binary weight, else perform path integral on hidden weight')
 parser.add_argument('--decay', type = float, default = 0.0, metavar = 'dc', help='Weight decay')
 parser.add_argument('--init', type = str, default = 'uniform', metavar = 'INIT', help='Weight initialisation')
 parser.add_argument('--init-width', type = float, default = 0.1, metavar = 'W', help='Weight initialisation width')
@@ -122,8 +123,11 @@ elif args.si:
             W[n] = p.data.clone().zero_()
             omega[n] = p.data.clone().zero_()
             if args.net=='bnn':
-                p_prev[n] = p.data.clone()   # sign()
-                p_old[n] = p.data.clone()   # sign()
+                p_prev[n] = p.data.sign().clone()
+                if args.bin_path:
+                    p_old[n] = p.data.sign().clone()
+                else:
+                    p_old[n] = p.data.clone()
             elif args.net=='dnn':
                 p_prev[n] = p.data.clone()
                 p_old[n] = p.data.clone()
@@ -215,7 +219,7 @@ for task_idx, task in enumerate(train_loader_list):
     
     bn_states.append(current_bn_state)
     if args.ewc:
-        fisher = estimate_fisher(model, dset_train_list[task_idx], device, empirical=False)
+        fisher = estimate_fisher(model, dset_train_list[task_idx], device, num=5000, empirical=True)
         for n, p in model.named_parameters():
             if n.find('bn') == -1: # not batchnorm
                 n = n.replace('.', '__')
@@ -235,7 +239,7 @@ for task_idx, task in enumerate(train_loader_list):
             if n.find('bn') == -1: # not batchnorm
                 n = n.replace('.','__')
                 if args.net=='bnn':
-                    p_prev[n] = p.org.detach().clone()  # or sign
+                    p_prev[n] = p.sign().detach().clone()  # or sign
                 else:
                     p_prev[n] = p.detach().clone()
 
