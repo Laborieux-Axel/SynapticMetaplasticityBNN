@@ -287,7 +287,8 @@ class Adam_meta(torch.optim.Optimizer):
                 binary_weight_before_update = torch.sign(p.data)
                 condition_consolidation = (torch.mul(binary_weight_before_update, exp_avg) > 0.0 )   # exp_avg has the same sign as exp_avg/denom
 
-                decayed_exp_avg = torch.mul(torch.ones_like(p.data)-torch.pow(torch.tanh(group['meta']*torch.abs(p.data)),2) ,exp_avg)
+                #decayed_exp_avg = torch.mul(torch.ones_like(p.data)-torch.pow(torch.tanh(group['meta']*torch.abs(p.data)),2) ,exp_avg)
+                decayed_exp_avg = torch.where(p.data.abs()>group['meta'], torch.zeros_like(p.data), exp_avg)
 
                 if p.dim()==1: # True if p is bias, false if p is weight
                     p.data.addcdiv_(-step_size, exp_avg, denom)
@@ -589,12 +590,13 @@ def update_omega(model, omega, p_prev, W, epsilon=0.1):
             if p.requires_grad:
                 n = n.replace('.', '__')
                 if isinstance(model, BNN):
-                    p_current = p.sign().detach().clone()   # sign()
+                    p_current = p.org.detach().clone()   # sign()
                 else:
                     p_current = p.detach().clone()
                 p_change = p_current - p_prev[n]
                 omega_add = W[n]/(p_change**2 + epsilon)
                 omega[n] += omega_add
+                print('parameter :\t', n, '\nomega :\t', omega[n])
                 W[n] = p.data.clone().zero_()
     return omega
 
@@ -625,7 +627,8 @@ def SI_loss(model, omega, prev_params, si_lambda):
         if p.requires_grad and (n.find('bn')==-1):
             n = n.replace('.', '__')
             if isinstance(model, BNN):
-                losses.append((omega[n] * (p - prev_params[n])**2).sum())  #org or sign
+                losses.append((omega[n] * (p - prev_params[n].sign())**2).sum())  #org or sign
+                print('p =\t',p,'\np_prev =\t', prev_params[n])
             else:
                 losses.append((omega[n] * (p - prev_params[n])**2).sum())
     return si_lambda*sum(losses)

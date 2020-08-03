@@ -123,7 +123,7 @@ elif args.si:
             W[n] = p.data.clone().zero_()
             omega[n] = p.data.clone().zero_()
             if args.net=='bnn':
-                p_prev[n] = p.data.sign().clone()
+                p_prev[n] = p.data.clone()  # or sign
                 if args.bin_path:
                     p_old[n] = p.data.sign().clone()
                 else:
@@ -239,7 +239,7 @@ for task_idx, task in enumerate(train_loader_list):
             if n.find('bn') == -1: # not batchnorm
                 n = n.replace('.','__')
                 if args.net=='bnn':
-                    p_prev[n] = p.sign().detach().clone()  # or sign
+                    p_prev[n] = p.org.detach().clone()  # or sign
                 else:
                     p_prev[n] = p.detach().clone()
 
