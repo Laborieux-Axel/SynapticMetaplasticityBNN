@@ -157,8 +157,8 @@ class DNN(torch.nn.Module):
             x = self.layers['fc'+str(layer+1)](x)
             x = self.layers['bn'+str(layer+1)](x)
             if layer != self.hidden_layers:
-                x = torch.tanh(x)
-                #x = torch.nn.functional.relu(x)
+                #x = torch.tanh(x)
+                x = torch.nn.functional.relu(x)
         return x
 
     def save_bn_states(self):
@@ -287,8 +287,8 @@ class Adam_meta(torch.optim.Optimizer):
                 binary_weight_before_update = torch.sign(p.data)
                 condition_consolidation = (torch.mul(binary_weight_before_update, exp_avg) > 0.0 )   # exp_avg has the same sign as exp_avg/denom
 
-                #decayed_exp_avg = torch.mul(torch.ones_like(p.data)-torch.pow(torch.tanh(group['meta']*torch.abs(p.data)),2) ,exp_avg)
-                decayed_exp_avg = torch.where(p.data.abs()>group['meta'], torch.zeros_like(p.data), exp_avg)
+                decayed_exp_avg = torch.mul(torch.ones_like(p.data)-torch.pow(torch.tanh(group['meta']*torch.abs(p.data)),2) ,exp_avg)
+                #decayed_exp_avg = torch.where(p.data.abs()>group['meta'], torch.zeros_like(p.data), exp_avg)
 
                 if p.dim()==1: # True if p is bias, false if p is weight
                     p.data.addcdiv_(-step_size, exp_avg, denom)

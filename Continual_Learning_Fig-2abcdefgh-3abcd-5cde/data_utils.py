@@ -73,7 +73,7 @@ def createHyperparametersFile(path, args):
         "- ewc: {}".format(args.ewc) + "\n",
         "- ewc lambda: {}".format(args.ewc_lambda) + "\n",
         "- SI: {}".format(args.si) + "\n",
-        "- Binary Path Intagral: {}".format(args.bin_path) + "\n",
+        "- Binary Path Integral: {}".format(args.bin_path) + "\n",
         "- SI lambda: {}".format(args.si_lambda) + "\n",
         "- decay: {}".format(args.decay) + "\n",
         "- epochs per task: {}".format(args.epochs_per_task) + "\n",
