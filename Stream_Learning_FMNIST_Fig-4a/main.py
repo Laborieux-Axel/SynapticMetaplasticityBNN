@@ -34,6 +34,12 @@ parser.add_argument('--init-width',type = float,default = 0.1, metavar = 'W',hel
 parser.add_argument('--task',type = str,default = 'FMNIST', metavar = 'T',help='Task to choose between FMNIST and MNIST')
 parser.add_argument('--save',type = bool,default = True, metavar = 'S',help='Saving the results')
 parser.add_argument('--device',type = int,default = 0, metavar = 'Dev',help='Device on which run the simulation')
+parser.add_argument('--beaker', default = False, action = 'store_true', help='use beaker')
+parser.add_argument('--fb', type = float, default = 5e-3, metavar = 'fb', help='feeback coeff from last beaker to the first')
+parser.add_argument('--n-bk', type = int, default = 4, metavar = 'bk', help='number of beakers')
+parser.add_argument('--ratios', nargs = '+', type = float, default = [1e-2,1e-3,1e-4,1e-5], metavar = 'Ra', help='pipes specs between beakers')
+
+
 
 args = parser.parse_args()
 
@@ -41,7 +47,7 @@ device = torch.device("cuda:"+str(args.device) if torch.cuda.is_available() else
 
 date = datetime.now().strftime('%Y-%m-%d')
 time = datetime.now().strftime('%H-%M-%S')
-path = 'results/'+date+'/'+time
+path = 'results/'+date+'/'+time+'_gpu'+str(args.device)
 if not(os.path.exists(path)):
     os.makedirs(path)
 
@@ -100,8 +106,11 @@ data['acc_test'], data['acc_1st_sub'] = [], []
 
 name = '_'+data['net']+'_'+data['arch']+'_'+args.task
 
-optimizer = Adam_meta(model.parameters(), lr = lr, meta = meta, weight_decay = args.decay)
-    
+if not(args.beaker):
+    optimizer = Adam_meta(model.parameters(), lr = lr, meta = meta, weight_decay = args.decay)
+else:
+    optimizer = Adam_bk(model.parameters(), lr = lr, n_bk=args.n_bk, ratios=args.ratios, feedback=args.fb, meta=meta, weight_decay=args.decay, path=path)
+
 for task_idx, task in enumerate(train_loader_list):
 
     for epoch in range(1, epochs+1):
