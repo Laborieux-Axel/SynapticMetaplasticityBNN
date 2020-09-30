@@ -20,26 +20,26 @@ The code for EWC was adapted from [this repo](https://github.com/GMvandeVen/cont
 These runs (~3 hours) produce the data of Fig. 2 (a), (b), (c), (d), (e).  To obtain the data of Fig. 2(g), (h), lines 170-172 in main.py need to be uncommented.  
 ```
 #Fig. 2(a)
-python main.py --net bnn --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.0 --epochs-per-task 40 --task-sequence pMNIST pMNIST pMNIST pMNIST pMNIST pMNIST  
+python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.0 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'  
 ```
 ```
 #Fig. 2(b)
-python main.py --net bnn --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.5 --epochs-per-task 40 --task-sequence pMNIST pMNIST pMNIST pMNIST pMNIST pMNIST  
+python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.5 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'  
 ```
 ```
 #Fig. 2(c)
-python main.py --net bnn --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.0 --epochs-per-task 40 --task-sequence pMNIST pMNIST pMNIST pMNIST pMNIST pMNIST  
+python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.0 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'  
 ```
 ```
 #Fig. 2(d)
-python main.py --net bnn --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.35 --epochs-per-task 40 --task-sequence pMNIST pMNIST pMNIST pMNIST pMNIST pMNIST  
+python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.35 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'  
 ```
 
 #### BNN with elastic weight consolidation  
 
 For random consolidation (~3 hours) of Table 1, some lines need to be commented in main.py  
 ```
-python main.py --net bnn --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --ewc-lambda 5000.0 --epochs-per-task 40 --task-sequence pMNIST pMNIST pMNIST pMNIST pMNIST pMNIST  
+python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --ewc-lambda 5000.0 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'  
 ```
 
 #### Full Precision Neural Network with increasing metaplasticity
@@ -47,10 +47,10 @@ python main.py --net bnn --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --ewc
 These runs (~3 hours) produce the data of Fig. 2(f).  
 
 ```
-python main.py --net dnn --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.0 --epochs-per-task 40 --task-sequence pMNIST pMNIST pMNIST pMNIST pMNIST pMNIST  
-python main.py --net dnn --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.5 --epochs-per-task 40 --task-sequence pMNIST pMNIST pMNIST pMNIST pMNIST pMNIST  
-python main.py --net dnn --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.0 --epochs-per-task 40 --task-sequence pMNIST pMNIST pMNIST pMNIST pMNIST pMNIST  
-python main.py --net dnn --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.35 --epochs-per-task 40 --task-sequence pMNIST pMNIST pMNIST pMNIST pMNIST pMNIST  
+python main.py --net 'dnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.0 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'  
+python main.py --net 'dnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.5 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'  
+python main.py --net 'dnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.0 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'  
+python main.py --net 'dnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.35 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'  
 ```
 
 #### BNN learning MNIST-FMNIST  
@@ -59,19 +59,19 @@ These runs (~1 hour) produce the data of Fig. 3(a), (b), (c), (d).
 
 ```
 #Fig. 3(a)
-python main.py --net bnn --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.0 --epochs-per-task 50 --task-sequence MNIST FMNIST
+python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.0 --epochs-per-task 50 --task-sequence MNIST FMNIST
 ```
 ```
 #Fig. 3(b)
-python main.py --net bnn --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.5 --epochs-per-task 50 --task-sequence MNIST FMNIST
+python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.5 --epochs-per-task 50 --task-sequence MNIST FMNIST
 ```
 ```
 #Fig. 3(c)
-python main.py --net bnn --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.0 --epochs-per-task 50 --task-sequence FMNIST MNIST
+python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.0 --epochs-per-task 50 --task-sequence FMNIST MNIST
 ```
 ```
 #Fig. 3(d)
-python main.py --net bnn --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.5 --epochs-per-task 50 --task-sequence FMNIST MNIST  
+python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.5 --epochs-per-task 50 --task-sequence FMNIST MNIST  
 ```
 
 
@@ -79,7 +79,7 @@ python main.py --net bnn --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --met
 
 This run needs approx 1 hour. Lines at the end of main.py need to be uncommented to produce the data of Fig. 5(c), (d), (e).  
 ```
-python main.py --net bnn --hidden-layers 1024 1024 --decay 1e-7 --meta 1.35 --lr 0.005 --epochs-per-task 40 --task-sequence MNIST
+python main.py --net 'bnn' --hidden-layers 1024 1024 --decay 1e-7 --meta 1.35 --lr 0.005 --epochs-per-task 40 --task-sequence MNIST
 ```
 
 ## Stream Learning (Fashion MNIST)  
