@@ -37,6 +37,7 @@ parser.add_argument('--decay', type = float, default = 0.0, metavar = 'dc', help
 parser.add_argument('--init', type = str, default = 'uniform', metavar = 'INIT', help='Weight initialisation')
 parser.add_argument('--init-width', type = float, default = 0.1, metavar = 'W', help='Weight initialisation width')
 parser.add_argument('--save', type = bool, default = True, metavar = 'S', help='Saving the results')
+parser.add_argument('--interleaved', default = False, action = 'store_true', help='saving results')
 parser.add_argument('--beaker', default = False, action = 'store_true', help='use beaker')
 parser.add_argument('--fb', type = float, default = 5e-3, metavar = 'fb', help='feeback coeff from last beaker to the first')
 parser.add_argument('--n-bk', type = int, default = 4, metavar = 'bk', help='number of beakers')
@@ -83,6 +84,12 @@ for idx, task in enumerate(args.task_sequence):
         test_loader_list.append(test_loader)
         dset_train_list.append(dset_train)
         task_names.append(task+str(idx+1))
+
+if args.interleaved:
+    dset_train = torch.utils.data.ConcatDataset(dset_train_list)
+    print(len(dset_train))
+    train_loader = torch.utils.data.DataLoader(dset_train, batch_size=100, shuffle=True, num_workers=1)
+    train_loader_list = [train_loader]
 
     
 # Hyperparameters

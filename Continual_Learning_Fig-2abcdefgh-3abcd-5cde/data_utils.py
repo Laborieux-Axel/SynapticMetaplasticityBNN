@@ -59,6 +59,7 @@ def createHyperparametersFile(path, args):
 
     hyperparameters = open(path + r"/hyperparameters.txt","w+")
     L = ["- scenario: {}".format(args.scenario) + "\n",
+        "- interleaved: {}".format(args.interleaved) + "\n",
         "- hidden layers: {}".format(args.hidden_layers) + "\n",
         "- normalization: {}".format(args.norm) + "\n",
         "- net: {}".format(args.net) + "\n",
