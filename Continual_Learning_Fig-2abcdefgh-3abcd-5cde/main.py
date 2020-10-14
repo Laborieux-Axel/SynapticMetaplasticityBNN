@@ -8,7 +8,7 @@ import argparse
 import matplotlib
 matplotlib.use('agg')
 
-assert(torch.__version__ <= '1.1.0')
+#assert(torch.__version__ <= '1.1.0')
 
 from collections import OrderedDict
 from datetime import datetime
