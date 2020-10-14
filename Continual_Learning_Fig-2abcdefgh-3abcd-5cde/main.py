@@ -74,6 +74,11 @@ for idx, task in enumerate(args.task_sequence):
         test_loader_list.append(mnist_test_loader)
         dset_train_list.append(mnist_dset_train)
         task_names.append(task)
+    elif task == 'USPS':
+        train_loader_list.append(usps_train_loader)
+        test_loader_list.append(usps_test_loader)
+        dset_train_list.append(usps_dset_train)
+        task_names.append(task)
     elif task == 'FMNIST':
         train_loader_list.append(fashion_mnist_train_loader)
         test_loader_list.append(fashion_mnist_test_loader)
