@@ -302,7 +302,7 @@ class Adam_meta(torch.optim.Optimizer):
 
 class Adam_bk(torch.optim.Optimizer):
 
-    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), n_bk=1, ratios=[0], meta = 0.0, feedback=0.0, eps=1e-8,
+    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), n_bk=1, ratios=[0], areas=[1],  meta = 0.0, feedback=0.0, eps=1e-8,
                  weight_decay=0, amsgrad=False, path='.'):
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
@@ -312,7 +312,7 @@ class Adam_bk(torch.optim.Optimizer):
             raise ValueError("Invalid beta parameter at index 0: {}".format(betas[0]))
         if not 0.0 <= betas[1] < 1.0:
             raise ValueError("Invalid beta parameter at index 1: {}".format(betas[1]))
-        defaults = dict(lr=lr, betas=betas, n_bk=n_bk, ratios=ratios, meta=meta, feedback=feedback, eps=eps,
+        defaults = dict(lr=lr, betas=betas, n_bk=n_bk, ratios=ratios, areas=areas, meta=meta, feedback=feedback, eps=eps,
                         weight_decay=weight_decay, amsgrad=amsgrad, path=path)
         super(Adam_bk, self).__init__(params, defaults)
 
@@ -335,6 +335,7 @@ class Adam_bk(torch.optim.Optimizer):
         for group in self.param_groups:
             n_bk = group['n_bk']
             ratios = group['ratios']
+            areas = group['areas']
             meta = group['meta']
             feedback = group['feedback']
             path = group['path']
@@ -406,7 +407,7 @@ class Adam_bk(torch.optim.Optimizer):
                 else:
                     # weight update
                     p.data.addcdiv_(-step_size, exp_avg, denom)
-                    p.data.add_(ratios[0]*(state['bk1_t-1']-state['bk0_t-1']))
+                    p.data.add_((ratios[0]/areas[0])*(state['bk1_t-1']-state['bk0_t-1']))
                     p.data.add_(torch.where( (state['bk'+str(n_bk-1)+'_t-1'] - state['bk0_t-1']) * state['bk'+str(n_bk-1)+'_t-1'].sign() > 0 , feedback*(state['bk'+str(n_bk-1)+'_t-1'] - state['bk0_t-1']),
                                                                                                                       torch.zeros_like(p.data)))
                     # Update of the beaker levels
@@ -416,10 +417,10 @@ class Adam_bk(torch.optim.Optimizer):
                             if bk_idx==(n_bk-1):
                                 condition = (state['bk'+str(bk_idx-1)+'_t-1'] - state['bk'+str(bk_idx)+'_t-1'])*state['bk'+str(bk_idx)+'_t-1'] < 0
                                 decayed_m = 1 - torch.tanh(meta*state['bk'+str(bk_idx)+'_t-1'])**2
-                                state['bk'+str(bk_idx)+'_t'] = torch.where(condition, state['bk'+str(bk_idx)+'_t-1'] + ratios[bk_idx-1]*decayed_m*(state['bk'+str(bk_idx-1)+'_t-1'] - state['bk'+str(bk_idx)+'_t-1']) + ratios[bk_idx]*(state['bk'+str(bk_idx+1)+'_t-1'] - state['bk'+str(bk_idx)+'_t-1']), 
-                                                                                      state['bk'+str(bk_idx)+'_t-1'] + ratios[bk_idx-1]*(state['bk'+str(bk_idx-1)+'_t-1'] - state['bk'+str(bk_idx)+'_t-1']) + ratios[bk_idx]*(state['bk'+str(bk_idx+1)+'_t-1'] - state['bk'+str(bk_idx)+'_t-1']))
+                                state['bk'+str(bk_idx)+'_t'] = torch.where(condition, state['bk'+str(bk_idx)+'_t-1'] + (ratios[bk_idx-1]/areas[bk_idx])*decayed_m*(state['bk'+str(bk_idx-1)+'_t-1'] - state['bk'+str(bk_idx)+'_t-1']) + (ratios[bk_idx]/areas[bk_idx])*(state['bk'+str(bk_idx+1)+'_t-1'] - state['bk'+str(bk_idx)+'_t-1']), 
+                                                                                      state['bk'+str(bk_idx)+'_t-1'] + (ratios[bk_idx-1]/areas[bk_idx])*(state['bk'+str(bk_idx-1)+'_t-1'] - state['bk'+str(bk_idx)+'_t-1']) + (ratios[bk_idx]/areas[bk_idx])*(state['bk'+str(bk_idx+1)+'_t-1'] - state['bk'+str(bk_idx)+'_t-1']))
                             else:
-                                state['bk'+str(bk_idx)+'_t'] = state['bk'+str(bk_idx)+'_t-1'] + ratios[bk_idx-1]*(state['bk'+str(bk_idx-1)+'_t-1'] - state['bk'+str(bk_idx)+'_t-1']) + ratios[bk_idx]*(state['bk'+str(bk_idx+1)+'_t-1'] - state['bk'+str(bk_idx)+'_t-1'])
+                                state['bk'+str(bk_idx)+'_t'] = state['bk'+str(bk_idx)+'_t-1'] + (ratios[bk_idx-1]/areas[bk_idx])*(state['bk'+str(bk_idx-1)+'_t-1'] - state['bk'+str(bk_idx)+'_t-1']) + (ratios[bk_idx]/areas[bk_idx])*(state['bk'+str(bk_idx+1)+'_t-1'] - state['bk'+str(bk_idx)+'_t-1'])
                     
 
                 # Plotting beaker levels and distributions
