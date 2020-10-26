@@ -20,7 +20,9 @@ parser = argparse.ArgumentParser(description='BNN learning several tasks in a ro
 
 parser.add_argument('--scenario', type = str, default = 'task', metavar = 'SC', help='1 mean per task or 1 mean for all task')
 parser.add_argument('--net', type = str, default = 'bnn', metavar = 'NT', help='Type of net')
+parser.add_argument('--in-size', type = int, default = 784, metavar = 'in', help='input size')
 parser.add_argument('--hidden-layers', nargs = '+', type = int, default = [1024,1024], metavar = 'HL', help='size of the hidden layers')
+parser.add_argument('--out-size', type = int, default = 10, metavar = 'out', help='output size')
 parser.add_argument('--task-sequence', nargs = '+', type = str, default = ['MNIST'], metavar = 'TS', help='Sequence of tasks to learn')
 parser.add_argument('--lr', type = float, default = 0.005, metavar = 'LR', help='Learning rate')
 parser.add_argument('--gamma', type = float, default = 1.0, metavar = 'G', help='dividing factor for lr decay')
@@ -90,6 +92,17 @@ for idx, task in enumerate(args.task_sequence):
         test_loader_list.append(test_loader)
         dset_train_list.append(dset_train)
         task_names.append(task+str(idx+1))
+    elif task == 'animals':
+        train_loader_list.append(animals_train_loader)
+        test_loader_list.append(animals_test_loader)
+        dset_train_list.append(animals_dset_train)
+        task_names.append('animals')
+    elif task == 'vehicles':
+        train_loader_list.append(vehicles_train_loader)
+        test_loader_list.append(vehicles_test_loader)
+        dset_train_list.append(vehicles_dset_train)
+        task_names.append('vehicles')
+
 
 if args.interleaved:
     dset_train = torch.utils.data.ConcatDataset(dset_train_list)
@@ -105,7 +118,7 @@ save_result = args.save
 meta = args.meta
 ewc_lambda = args.ewc_lambda
 si_lambda = args.si_lambda
-archi = [784] + args.hidden_layers + [10]
+archi = [args.in_size] + args.hidden_layers + [args.out_size]
 
 if args.net =='bnn':
     model = BNN( archi, init = args.init, width = args.init_width, norm = args.norm).to(device)

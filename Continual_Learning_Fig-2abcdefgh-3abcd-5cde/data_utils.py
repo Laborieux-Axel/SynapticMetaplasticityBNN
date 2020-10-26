@@ -62,6 +62,112 @@ def create_permuted_loaders(task):
     return train_loader, test_loader, dset_train
 
 
+class DatasetProcessing(torch.utils.data.Dataset): 
+    def __init__(self, data, target, transform=None): 
+        self.transform = transform
+        self.data = data.astype(np.float32)[:,:,None]
+        self.target = torch.from_numpy(target).long()
+    def __getitem__(self, index): 
+        if self.transform is not None:
+            return self.transform(self.data[index]), self.target[index]
+        else:
+            return self.data[index], self.target[index]
+    def __len__(self): 
+        return len(list(self.data))
+
+
+def process_features(X_train, X_test, mode):
+    if mode=="cutoff":
+        cutoff = 8
+        threshold_train = np.zeros((np.shape(X_train)[0],1))
+        threshold_test = np.zeros((np.shape(X_test)[0],1)) 
+        for i in range(np.shape(X_train)[0]):
+            threshold_train[i,0] = np.unique(X_train[i,:])[-cutoff]
+        for i in range(np.shape(X_test)[0]):
+            threshold_test[i,0] = np.unique(X_test[i,:])[-cutoff]
+        X_train =   (np.sign(X_train  - threshold_train + 1e-6 ) + 1.0)/2
+        X_test =  (np.sign (X_test  - threshold_test +1e-6 ) + 1.0)/2
+    elif mode=="mean_over_examples":
+        X_train = ( X_train - X_train.mean(axis = 0, keepdims = True) )/ X_train.var(axis =0, keepdims = True) # ???
+        X_test = ( X_test - X_test.mean(axis=0, keepdims = True) ) /X_test.var(axis = 0, keepdims = True)
+    elif mode=="mean_over_examples_sign":
+        X_train =   (np.sign(X_train  - X_train.mean(axis = 0, keepdims = True) ) + 1.0)/2
+        X_test =  (np.sign (X_test  - X_test.mean(axis = 0, keepdims = True) ) + 1.0)/2
+    elif mode=="mean_over_pixels":
+        X_train = ( X_train - X_train.mean(axis = 1, keepdims = True) )/ X_train.var(axis =1, keepdims = True)  # Instance norm
+        X_test = ( X_test - X_test.mean(axis=1, keepdims = True) ) /X_test.var(axis = 1, keepdims = True)
+    elif mode=="mean_over_pixels_sign":
+        X_train =   (np.sign(X_train  - X_train.mean(axis = 1, keepdims = True) ) + 1.0)/2  
+        X_test =  (np.sign (X_test  - X_test.mean(axis = 1, keepdims = True) ) + 1.0)/2
+    elif mode=="global_mean":
+        X_train = ( X_train - X_train.mean(keepdims = True) )/ X_train.var(keepdims = True) # Batch norm
+        X_test = ( X_test - X_test.mean(keepdims = True) ) /X_test.var(keepdims = True)
+    elif mode=="rescale":
+        X_train =  (X_train / X_train.max(axis = 1, keepdims = True) )
+        X_test =  (X_test / X_test.max(axis = 1, keepdims = True) )
+    return X_train, X_test
+
+
+def relabel(label):
+    label_map = [5,6,0,1,2,3,4,7,8,9]
+    return label_map[label]
+
+vrelabel = np.vectorize(relabel)
+
+cifar_X_train = torch.load('cifar10_features_dataset/train.pt').cpu().numpy()
+cifar_Y_train = torch.load('cifar10_features_dataset/train_targets.pt').cpu().numpy() 
+cifar_X_test = torch.load('cifar10_features_dataset/test.pt').cpu().numpy() 
+cifar_Y_test = torch.load('cifar10_features_dataset/test_targets.pt').cpu().numpy()
+
+cifar_Y_train = vrelabel(cifar_Y_train)
+cifar_Y_test = vrelabel(cifar_Y_test)
+
+
+
+is_animal = np.vectorize(lambda l: l < 5) 
+is_vehicle = np.vectorize(lambda l: l >= 5)  
+ 
+
+mode = 'mean_over_pixels'
+animals_X_train = cifar_X_train[is_animal(cifar_Y_train)] 
+animals_X_test = cifar_X_test[is_animal(cifar_Y_test)] 
+ 
+animals_X_train, animals_X_test = process_features(animals_X_train, animals_X_test, mode) 
+ 
+animals_Y_train = cifar_Y_train[is_animal(cifar_Y_train)] 
+animals_Y_test = cifar_Y_test[is_animal(cifar_Y_test)] 
+
+
+
+ 
+vehicles_X_train = cifar_X_train[is_vehicle(cifar_Y_train)] 
+vehicles_X_test = cifar_X_test[is_vehicle(cifar_Y_test)] 
+
+vehicles_X_train, vehicles_X_test = process_features(vehicles_X_train, vehicles_X_test, mode) 
+ 
+vehicles_Y_train = cifar_Y_train[is_vehicle(cifar_Y_train)] - 5
+vehicles_Y_test = cifar_Y_test[is_vehicle(cifar_Y_test)] - 5 
+
+
+
+
+classes = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck'] 
+classes_animals = ['bird', 'cat', 'deer', 'dog', 'frog'] 
+classes_vehicles = ['airplane', 'automobile', 'horse', 'ship', 'truck'] 
+ 
+animals_dset_train = DatasetProcessing(animals_X_train, animals_Y_train) 
+animals_train_loader = torch.utils.data.DataLoader(animals_dset_train, batch_size=100, shuffle=True, num_workers=4) 
+ 
+animals_dset_test = DatasetProcessing(animals_X_test, animals_Y_test) 
+animals_test_loader = torch.utils.data.DataLoader(animals_dset_test, batch_size=100, shuffle=False, num_workers=0) 
+ 
+vehicles_dset_train = DatasetProcessing(vehicles_X_train, vehicles_Y_train) 
+vehicles_train_loader = torch.utils.data.DataLoader(vehicles_dset_train, batch_size=100, shuffle=True, num_workers=4) 
+ 
+vehicles_dset_test = DatasetProcessing(vehicles_X_test, vehicles_Y_test) 
+vehicles_test_loader = torch.utils.data.DataLoader(vehicles_dset_test, batch_size=100, shuffle=False, num_workers=0) 
+ 
+
 
 def createHyperparametersFile(path, args):
 
