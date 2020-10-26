@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "main.py", line 105, in <module>
+    model = BNN( archi, init = args.init, width = args.init_width, norm = args.norm).to(device)
+  File "/home/axel/anaconda3/envs/torch/lib/python3.7/site-packages/torch/nn/modules/module.py", line 386, in to
+    return self._apply(convert)
+  File "/home/axel/anaconda3/envs/torch/lib/python3.7/site-packages/torch/nn/modules/module.py", line 193, in _apply
+    module._apply(fn)
+  File "/home/axel/anaconda3/envs/torch/lib/python3.7/site-packages/torch/nn/modules/module.py", line 193, in _apply
+    module._apply(fn)
+  File "/home/axel/anaconda3/envs/torch/lib/python3.7/site-packages/torch/nn/modules/module.py", line 199, in _apply
+    param.data = fn(param.data)
+  File "/home/axel/anaconda3/envs/torch/lib/python3.7/site-packages/torch/nn/modules/module.py", line 384, in convert
+    return t.to(device, dtype if t.is_floating_point() else None, non_blocking)
+KeyboardInterrupt

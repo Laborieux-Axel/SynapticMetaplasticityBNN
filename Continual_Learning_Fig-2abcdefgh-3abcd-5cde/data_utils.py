@@ -26,14 +26,14 @@ fashion_mnist_train_loader = torch.utils.data.DataLoader(fmnist_dset_train, batc
 fmnist_dset_test = torchvision.datasets.FashionMNIST('./fmnist_pytorch', train=False, transform=transform, target_transform=None, download=True)
 fashion_mnist_test_loader = torch.utils.data.DataLoader(fmnist_dset_test, batch_size=100, shuffle=False, num_workers=1)
 
-usps_transform = torchvision.transforms.Compose( [torchvision.transforms.Resize((28,28)),
-    torchvision.transforms.ToTensor(), torchvision.transforms.Normalize(mean=(0.0,), std=(1.0,))])
+#usps_transform = torchvision.transforms.Compose( [torchvision.transforms.Resize((28,28)),
+#    torchvision.transforms.ToTensor(), torchvision.transforms.Normalize(mean=(0.0,), std=(1.0,))])
 
-usps_dset_train = torchvision.datasets.USPS('./usps_pytorch', train=True, transform=usps_transform, target_transform=None, download=True)
-usps_train_loader = torch.utils.data.DataLoader(usps_dset_train, batch_size=12, shuffle=True, num_workers=1)
+#usps_dset_train = torchvision.datasets.USPS('./usps_pytorch', train=True, transform=usps_transform, target_transform=None, download=True)
+#usps_train_loader = torch.utils.data.DataLoader(usps_dset_train, batch_size=12, shuffle=True, num_workers=1)
 
-usps_dset_test = torchvision.datasets.USPS('./usps_pytorch', train=False, transform=usps_transform, target_transform=None, download=True)
-usps_test_loader = torch.utils.data.DataLoader(usps_dset_test, batch_size=100, shuffle=False, num_workers=1)
+#usps_dset_test = torchvision.datasets.USPS('./usps_pytorch', train=False, transform=usps_transform, target_transform=None, download=True)
+#usps_test_loader = torch.utils.data.DataLoader(usps_dset_test, batch_size=100, shuffle=False, num_workers=1)
 
 def create_permuted_loaders(task):
     
@@ -78,6 +78,7 @@ def createHyperparametersFile(path, args):
         "- beaker: {}".format(args.beaker) + "\n",
         "- number of beakers: {}".format(args.n_bk) + "\n",
         "- ratios: {}".format(args.ratios) + "\n",
+        "- areas: {}".format(args.areas) + "\n",
         "- feedback: {}".format(args.fb) + "\n",
         "- ewc: {}".format(args.ewc) + "\n",
         "- ewc lambda: {}".format(args.ewc_lambda) + "\n",
