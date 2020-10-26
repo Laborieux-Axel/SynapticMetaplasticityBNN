@@ -180,7 +180,7 @@ def createHyperparametersFile(path, args):
         "- task sequence: {}".format(args.task_sequence) + "\n",
         "- lr: {}".format(args.lr) + "\n",
         "- gamma: {}".format(args.gamma) + "\n",
-        "- meta: {}".format(args.meta) + "\n",
+        "- metas: {}".format(args.metas) + "\n",
         "- beaker: {}".format(args.beaker) + "\n",
         "- number of beakers: {}".format(args.n_bk) + "\n",
         "- ratios: {}".format(args.ratios) + "\n",

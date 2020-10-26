@@ -203,7 +203,7 @@ def plot_parameters(model, path, save=True):
 
 class Adam_meta(torch.optim.Optimizer):
 
-    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), meta = 0.75, eps=1e-8,
+    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), metas = {}, eps=1e-8,
                  weight_decay=0, amsgrad=False):
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
@@ -213,7 +213,7 @@ class Adam_meta(torch.optim.Optimizer):
             raise ValueError("Invalid beta parameter at index 0: {}".format(betas[0]))
         if not 0.0 <= betas[1] < 1.0:
             raise ValueError("Invalid beta parameter at index 1: {}".format(betas[1]))
-        defaults = dict(lr=lr, betas=betas, meta=meta, eps=eps,
+        defaults = dict(lr=lr, betas=betas, metas=metas, eps=eps,
                         weight_decay=weight_decay, amsgrad=amsgrad)
         super(Adam_meta, self).__init__(params, defaults)
 
@@ -287,12 +287,12 @@ class Adam_meta(torch.optim.Optimizer):
                 binary_weight_before_update = torch.sign(p.data)
                 condition_consolidation = (torch.mul(binary_weight_before_update, exp_avg) > 0.0 )   # exp_avg has the same sign as exp_avg/denom
 
-                decayed_exp_avg = torch.mul(torch.ones_like(p.data)-torch.pow(torch.tanh(group['meta']*torch.abs(p.data)),2) ,exp_avg)
                 #decayed_exp_avg = torch.where(p.data.abs()>group['meta'], torch.zeros_like(p.data), exp_avg)
 
                 if p.dim()==1: # True if p is bias, false if p is weight
                     p.data.addcdiv_(-step_size, exp_avg, denom)
                 else:
+                    decayed_exp_avg = torch.mul(torch.ones_like(p.data)-torch.pow(torch.tanh(group['metas'][str(p.shape)]*torch.abs(p.data)),2), exp_avg)
                     #p.data.addcdiv_(-step_size, exp_avg , denom)  #normal update
                     p.data.addcdiv_(-step_size, torch.where(condition_consolidation, decayed_exp_avg, exp_avg), denom)  #assymetric lr for metaplasticity
                     
