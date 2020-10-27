@@ -165,7 +165,7 @@ def process_cifar100(n_subset):
     cifar100_Y_test = torch.load('cifar100_features_dataset/test_targets.pt').cpu().numpy()
 
     for k in range(n_subset):
-        partition = np.vectorize(lambda l: ((l < (k+1)*subset_size) and (l > k*subset_size)) )
+        partition = np.vectorize(lambda l: ((l < (k+1)*subset_size) and (l >= k*subset_size)) )
         mode = 'mean_over_pixels'
         sub_X_train = cifar100_X_train[partition(cifar100_Y_train)]
         sub_X_test = cifar100_X_test[partition(cifar100_Y_test)]

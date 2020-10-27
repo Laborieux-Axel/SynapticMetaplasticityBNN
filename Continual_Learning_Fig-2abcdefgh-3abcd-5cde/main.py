@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser(description='BNN learning several tasks in a ro
 parser.add_argument('--scenario', type = str, default = 'task', metavar = 'SC', help='1 mean per task or 1 mean for all task')
 parser.add_argument('--net', type = str, default = 'bnn', metavar = 'NT', help='Type of net')
 parser.add_argument('--in-size', type = int, default = 784, metavar = 'in', help='input size')
-parser.add_argument('--hidden-layers', nargs = '+', type = int, default = [1024,1024], metavar = 'HL', help='size of the hidden layers')
+parser.add_argument('--hidden-layers', nargs = '+', type = int, default = [], metavar = 'HL', help='size of the hidden layers')
 parser.add_argument('--out-size', type = int, default = 10, metavar = 'out', help='output size')
 parser.add_argument('--task-sequence', nargs = '+', type = str, default = ['MNIST'], metavar = 'TS', help='Sequence of tasks to learn')
 parser.add_argument('--lr', type = float, default = 0.005, metavar = 'LR', help='Learning rate')
@@ -238,10 +238,10 @@ for task_idx, task in enumerate(train_loader_list):
             if args.scenario == 'task':
                 if other_task_idx>=task_idx:
                     model.load_bn_states(current_bn_state)
-                    test_accuracy, test_loss = test(model , other_task, device)
+                    test_accuracy, test_loss = test(model , other_task, device, verbose=True)
                 else:
                     model.load_bn_states(bn_states[other_task_idx])
-                    test_accuracy, test_loss = test(model , other_task, device)
+                    test_accuracy, test_loss = test(model , other_task, device, verbose=True)
 
             elif args.scenario =='domain':
                 test_accuracy, test_loss = test(model, other_task, device)
