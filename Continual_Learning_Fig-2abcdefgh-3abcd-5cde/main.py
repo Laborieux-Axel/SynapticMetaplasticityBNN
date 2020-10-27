@@ -195,7 +195,7 @@ lrs = [lr*(args.gamma**(-i)) for i in range(len(args.task_sequence))]
 
 
 if args.beaker:
-    optimizer = Adam_bk(model.parameters(), lr = lr, n_bk=args.n_bk, ratios=args.ratios, areas=args.areas, feedback=args.fb, meta=args.meta[0], weight_decay=args.decay, path=path)
+    optimizer = Adam_bk(model.parameters(), lr = lr, n_bk=args.n_bk, ratios=args.ratios, areas=args.areas, feedback=args.fb, meta=meta, weight_decay=args.decay, path=path)
 if args.si:
     optimizer = torch.optim.Adam(model.parameters(), lr = lr, weight_decay = args.decay)
 
