@@ -6,3 +6,4 @@ Continual_Learning_Fig-2abcdefgh-3abcd-5cde/mnist_pytorch/
 Continual_Learning_Fig-2abcdefgh-3abcd-5cde/results/
 Stream_Learning_FMNIST_Fig-4a/__pycache__/
 Stream_Learning_FMNIST_Fig-4a/results/
+*.pt
