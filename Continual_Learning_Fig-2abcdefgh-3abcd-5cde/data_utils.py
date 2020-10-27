@@ -145,8 +145,8 @@ vehicles_X_test = cifar_X_test[is_vehicle(cifar_Y_test)]
 
 vehicles_X_train, vehicles_X_test = process_features(vehicles_X_train, vehicles_X_test, mode) 
  
-vehicles_Y_train = cifar_Y_train[is_vehicle(cifar_Y_train)] - 5
-vehicles_Y_test = cifar_Y_test[is_vehicle(cifar_Y_test)] - 5 
+vehicles_Y_train = cifar_Y_train[is_vehicle(cifar_Y_train)] #- 5
+vehicles_Y_test = cifar_Y_test[is_vehicle(cifar_Y_test)] #- 5 
 
 
 
@@ -180,7 +180,7 @@ def createHyperparametersFile(path, args):
         "- task sequence: {}".format(args.task_sequence) + "\n",
         "- lr: {}".format(args.lr) + "\n",
         "- gamma: {}".format(args.gamma) + "\n",
-        "- metas: {}".format(args.metas) + "\n",
+        "- meta: {}".format(args.meta) + "\n",
         "- beaker: {}".format(args.beaker) + "\n",
         "- number of beakers: {}".format(args.n_bk) + "\n",
         "- ratios: {}".format(args.ratios) + "\n",

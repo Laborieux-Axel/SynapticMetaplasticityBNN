@@ -28,7 +28,7 @@ parser.add_argument('--lr', type = float, default = 0.005, metavar = 'LR', help=
 parser.add_argument('--gamma', type = float, default = 1.0, metavar = 'G', help='dividing factor for lr decay')
 parser.add_argument('--epochs-per-task', type = int, default = 5, metavar = 'EPT', help='Number of epochs per tasks')
 parser.add_argument('--norm', type = str, default = 'bn', metavar = 'Nrm', help='Normalization procedure')
-parser.add_argument('--metas', type = float, nargs = '+',  default = [0.0], metavar = 'M', help='Metaplasticity coefficients layer wise')
+parser.add_argument('--meta', type = float, nargs = '+',  default = [0.0], metavar = 'M', help='Metaplasticity coefficients layer wise')
 parser.add_argument('--rnd-consolidation', default = False, action = 'store_true', help='use shuffled Elastic Weight Consolidation')
 parser.add_argument('--ewc-lambda', type = float, default = 0.0, metavar = 'Lbd', help='EWC coefficient')
 parser.add_argument('--ewc', default = False, action = 'store_true', help='use Elastic Weight Consolidation')
@@ -125,11 +125,12 @@ if args.net =='bnn':
 elif args.net =='dnn':
     model = DNN( archi, init = args.init, width = args.init_width).to(device)
 
-metas = {}
+meta = {}
 for n, p in model.named_parameters():
-    index = int(n[9])-1
+    index = int(n[9])
+    p.newname = 'l'+str(index)
     if 'fc' in n:
-        metas[str(p.shape)] = args.metas[index]
+        meta[p.newname] = args.meta[index-1] if len(args.meta)>1 else args.meta[0]
 
 
 
@@ -194,13 +195,13 @@ lrs = [lr*(args.gamma**(-i)) for i in range(len(args.task_sequence))]
 
 
 if args.beaker:
-    optimizer = Adam_bk(model.parameters(), lr = lr, n_bk=args.n_bk, ratios=args.ratios, areas=args.areas, feedback=args.fb, meta=args.metas[0], weight_decay=args.decay, path=path)
+    optimizer = Adam_bk(model.parameters(), lr = lr, n_bk=args.n_bk, ratios=args.ratios, areas=args.areas, feedback=args.fb, meta=args.meta[0], weight_decay=args.decay, path=path)
 if args.si:
     optimizer = torch.optim.Adam(model.parameters(), lr = lr, weight_decay = args.decay)
 
 for task_idx, task in enumerate(train_loader_list):
     if not(args.beaker or args.si):
-        optimizer = Adam_meta(model.parameters(), lr = lrs[task_idx], metas = metas, weight_decay = args.decay)
+        optimizer = Adam_meta(model.parameters(), lr = lrs[task_idx], meta = meta, weight_decay = args.decay)
            
     for epoch in range(1, epochs+1):
         
@@ -221,7 +222,7 @@ for task_idx, task in enumerate(train_loader_list):
         
         data['acc_tr'].append(train_accuracy)
         data['loss_tr'].append(train_loss)
-        data['meta'].append(metas)
+        data['meta'].append(meta)
         data['ewc'].append(ewc_lambda)
         data['SI'].append(si_lambda)
 
@@ -244,8 +245,8 @@ for task_idx, task in enumerate(train_loader_list):
             data['loss_test_tsk_'+str(other_task_idx+1)].append(test_loss)
         
         model.load_bn_states(current_bn_state)
-        #plot_parameters(model, path, save=save_result)
-
+    
+    plot_parameters(model, path, save=save_result)
     # Uncomment for hidden weight histogram of Fig. 2g,h
     #time = datetime.now().strftime('%H-%M-%S')
     #for l in range(model.hidden_layers + 1):
