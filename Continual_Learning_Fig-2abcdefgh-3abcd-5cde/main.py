@@ -93,16 +93,21 @@ for idx, task in enumerate(args.task_sequence):
         dset_train_list.append(dset_train)
         task_names.append(task+str(idx+1))
     elif task == 'animals':
+        animals_train_loader, animals_test_loader, animals_dset_train = process_cifar10(task)
         train_loader_list.append(animals_train_loader)
         test_loader_list.append(animals_test_loader)
         dset_train_list.append(animals_dset_train)
         task_names.append('animals')
     elif task == 'vehicles':
+        vehicles_train_loader, vehicles_test_loader, vehicles_dset_train = process_cifar10(task)
         train_loader_list.append(vehicles_train_loader)
         test_loader_list.append(vehicles_test_loader)
         dset_train_list.append(vehicles_dset_train)
         task_names.append('vehicles')
-
+    elif 'cifar100' in task:
+        n_subset = int(task.split('-')[1])  # task = "cifar100-20" -> n_subset = 20
+        train_loader_list, test_loader_list, dset_train_list = process_cifar100(n_subset)
+        task_names = ['cifar100-'+str(i+1) for i in range(n_subset)]
 
 if args.interleaved:
     dset_train = torch.utils.data.ConcatDataset(dset_train_list)
@@ -191,7 +196,7 @@ for t in range(len(task_names)):
 
 bn_states = []
 
-lrs = [lr*(args.gamma**(-i)) for i in range(len(args.task_sequence))]
+lrs = [lr*(args.gamma**(-i)) for i in range(len(train_loader_list))]
 
 
 if args.beaker:

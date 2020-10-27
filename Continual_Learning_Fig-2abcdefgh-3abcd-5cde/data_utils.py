@@ -114,59 +114,78 @@ def relabel(label):
 
 vrelabel = np.vectorize(relabel)
 
-cifar_X_train = torch.load('cifar10_features_dataset/train.pt').cpu().numpy()
-cifar_Y_train = torch.load('cifar10_features_dataset/train_targets.pt').cpu().numpy() 
-cifar_X_test = torch.load('cifar10_features_dataset/test.pt').cpu().numpy() 
-cifar_Y_test = torch.load('cifar10_features_dataset/test_targets.pt').cpu().numpy()
 
-cifar_Y_train = vrelabel(cifar_Y_train)
-cifar_Y_test = vrelabel(cifar_Y_test)
+def process_cifar10(subset):
 
+    cifar_X_train = torch.load('cifar10_features_dataset/train.pt').cpu().numpy()
+    cifar_Y_train = torch.load('cifar10_features_dataset/train_targets.pt').cpu().numpy() 
+    cifar_X_test = torch.load('cifar10_features_dataset/test.pt').cpu().numpy() 
+    cifar_Y_test = torch.load('cifar10_features_dataset/test_targets.pt').cpu().numpy()
 
+    cifar_Y_train = vrelabel(cifar_Y_train)
+    cifar_Y_test = vrelabel(cifar_Y_test)
 
-is_animal = np.vectorize(lambda l: l < 5) 
-is_vehicle = np.vectorize(lambda l: l >= 5)  
+    if subset=='animals':
+        partition = np.vectorize(lambda l: l < 5) 
+    elif subset=='vehicles':
+        partition = np.vectorize(lambda l: l >= 5)  
+    else:
+        raise('error unsuported subset')
  
-
-mode = 'mean_over_pixels'
-animals_X_train = cifar_X_train[is_animal(cifar_Y_train)] 
-animals_X_test = cifar_X_test[is_animal(cifar_Y_test)] 
+    mode = 'mean_over_pixels'
+    sub_X_train = cifar_X_train[partition(cifar_Y_train)] 
+    sub_X_test = cifar_X_test[partition(cifar_Y_test)] 
  
-animals_X_train, animals_X_test = process_features(animals_X_train, animals_X_test, mode) 
+    sub_X_train, sub_X_test = process_features(sub_X_train, sub_X_test, mode) 
  
-animals_Y_train = cifar_Y_train[is_animal(cifar_Y_train)] 
-animals_Y_test = cifar_Y_test[is_animal(cifar_Y_test)] 
-
-
-
+    sub_Y_train = cifar_Y_train[partition(cifar_Y_train)] 
+    sub_Y_test = cifar_Y_test[partition(cifar_Y_test)] 
  
-vehicles_X_train = cifar_X_train[is_vehicle(cifar_Y_train)] 
-vehicles_X_test = cifar_X_test[is_vehicle(cifar_Y_test)] 
-
-vehicles_X_train, vehicles_X_test = process_features(vehicles_X_train, vehicles_X_test, mode) 
+    sub_dset_train = DatasetProcessing(sub_X_train, sub_Y_train) 
+    sub_train_loader = torch.utils.data.DataLoader(sub_dset_train, batch_size=100, shuffle=True, num_workers=4) 
  
-vehicles_Y_train = cifar_Y_train[is_vehicle(cifar_Y_train)] #- 5
-vehicles_Y_test = cifar_Y_test[is_vehicle(cifar_Y_test)] #- 5 
+    sub_dset_test = DatasetProcessing(sub_X_test, sub_Y_test) 
+    sub_test_loader = torch.utils.data.DataLoader(sub_dset_test, batch_size=100, shuffle=False, num_workers=0) 
+ 
+    return sub_train_loader, sub_test_loader, sub_dset_train 
 
 
 
 
-classes = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck'] 
-classes_animals = ['bird', 'cat', 'deer', 'dog', 'frog'] 
-classes_vehicles = ['airplane', 'automobile', 'horse', 'ship', 'truck'] 
- 
-animals_dset_train = DatasetProcessing(animals_X_train, animals_Y_train) 
-animals_train_loader = torch.utils.data.DataLoader(animals_dset_train, batch_size=100, shuffle=True, num_workers=4) 
- 
-animals_dset_test = DatasetProcessing(animals_X_test, animals_Y_test) 
-animals_test_loader = torch.utils.data.DataLoader(animals_dset_test, batch_size=100, shuffle=False, num_workers=0) 
- 
-vehicles_dset_train = DatasetProcessing(vehicles_X_train, vehicles_Y_train) 
-vehicles_train_loader = torch.utils.data.DataLoader(vehicles_dset_train, batch_size=100, shuffle=True, num_workers=4) 
- 
-vehicles_dset_test = DatasetProcessing(vehicles_X_test, vehicles_Y_test) 
-vehicles_test_loader = torch.utils.data.DataLoader(vehicles_dset_test, batch_size=100, shuffle=False, num_workers=0) 
- 
+def process_cifar100(n_subset):
+    subset_size = 100//n_subset
+
+    train_loader_list = []
+    test_loader_list = []
+    dset_train_list = []
+
+    cifar100_X_train = torch.load('cifar100_features_dataset/train.pt').cpu().numpy()
+    cifar100_Y_train = torch.load('cifar100_features_dataset/train_targets.pt').cpu().numpy()
+    cifar100_X_test = torch.load('cifar100_features_dataset/test.pt').cpu().numpy()
+    cifar100_Y_test = torch.load('cifar100_features_dataset/test_targets.pt').cpu().numpy()
+
+    for k in range(n_subset):
+        partition = np.vectorize(lambda l: ((l < (k+1)*subset_size) and (l > k*subset_size)) )
+        mode = 'mean_over_pixels'
+        sub_X_train = cifar100_X_train[partition(cifar100_Y_train)]
+        sub_X_test = cifar100_X_test[partition(cifar100_Y_test)]
+
+        sub_X_train, sub_X_test = process_features(sub_X_train, sub_X_test, mode)
+
+        sub_Y_train = cifar100_Y_train[partition(cifar100_Y_train)]
+        sub_Y_test = cifar100_Y_test[partition(cifar100_Y_test)]
+
+        sub_dset_train = DatasetProcessing(sub_X_train, sub_Y_train)
+        sub_train_loader = torch.utils.data.DataLoader(sub_dset_train, batch_size=100, shuffle=True, num_workers=4)
+
+        sub_dset_test = DatasetProcessing(sub_X_test, sub_Y_test)
+        sub_test_loader = torch.utils.data.DataLoader(sub_dset_test, batch_size=100, shuffle=False, num_workers=0)
+
+        train_loader_list.append(sub_train_loader)
+        test_loader_list.append(sub_test_loader)
+        dset_train_list.append(sub_dset_train)
+
+    return train_loader_list, test_loader_list, dset_train_list
 
 
 def createHyperparametersFile(path, args):
