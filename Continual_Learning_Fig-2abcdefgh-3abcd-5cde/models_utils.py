@@ -52,6 +52,32 @@ class BinarizeLinear(torch.nn.Linear):
 
         return out
 
+
+
+class BinarizeConv2d(torch.nn.Conv2d):
+
+    def __init__(self, *kargs, **kwargs):
+        super(BinarizeConv2d, self).__init__(*kargs, **kwargs)
+
+
+    def forward(self, input):
+        if input.size(1) != 3:
+            input.data = Binarize(input.data)
+        if not hasattr(self.weight,'org'):
+            self.weight.org=self.weight.data.clone()
+        self.weight.data=Binarize(self.weight.org)
+
+        out = torch.nn.functional.conv2d(input, self.weight, None, self.stride,
+                                   self.padding, self.dilation, self.groups)
+
+        if not self.bias is None:
+            self.bias.org=self.bias.data.clone()
+            out += self.bias.view(1, -1, 1, 1).expand_as(out)
+
+        return out
+
+
+
 class BNN(torch.nn.Module):
     """
     MyNet can consist either of fc layers followed by batchnorm, fc weights being either float kind="classical_bn" 
@@ -117,7 +143,83 @@ class BNN(torch.nn.Module):
             for l in range(self.hidden_layers+1):
                 self.layers['bn'+str(l+1)].load_state_dict(bn_states[l])
 
-                   
+class ConvBNN(torch.nn.Module):
+
+    def __init__(self, init = "gauss", width = 0.01, norm='bn'):
+        super(ConvBNN, self).__init__()
+
+        self.norm = norm
+        self.hidden_layers = 2
+
+        layer_list = [ ( ('cv1'), BinarizeConv2d(1, 32, kernel_size=5, padding=2, stride=2, bias=False) ),  #out: (mb x 32 x 14 x 14)
+                       ( ( norm+'1'), self.normalization(32, 2) ), 
+                       ( ('cv2'), BinarizeConv2d(32, 64, kernel_size=4, padding=2, stride=2, bias=False)  ), #out ( mb x 64 x 8 x 8)
+                       ( ( norm+'2'), self.normalization(64, 2) ),
+                       ( ('fc3'), BinarizeLinear(64*64, 10, bias=False)), 
+                       ( ( norm+'3'), self.normalization(10, 1) )]
+ 
+        self.layers = torch.nn.ModuleDict(OrderedDict( layer_list ))
+
+        for key in self.layers.keys():
+            if not(norm in key):
+                if init == "gauss":
+                    torch.nn.init.normal_(self.layers[key].weight, mean=0, std=width)
+                if init == "uniform":
+                    torch.nn.init.uniform_(self.layers[key].weight, a= -width/2, b=width/2)
+
+    def normalization(self, size, dim):
+        if self.norm=='in':
+            if dim==2:
+                return torch.nn.InstanceNorm2d(size, affine=False, track_running_stats=False)
+            else:
+                return torch.nn.InstanceNorm1d(size, affine=False, track_running_stats=False)
+        elif self.norm=='bn':
+            if dim==2:
+                return torch.nn.BatchNorm2d(size, affine=True, track_running_stats=True)
+            else:
+                return torch.nn.BatchNorm1d(size, affine=True, track_running_stats=True)
+
+
+    def forward(self, x):
+
+        x = self.layers['cv1'](x)
+        if self.norm == 'in':  #IN needs channel dim
+            x = self.layers[self.norm+'1'](x.unsqueeze_(1)).squeeze_(1)
+        else:
+            x = self.layers[self.norm+'1'](x)
+        x = SignActivation.apply(x)
+
+        x = self.layers['cv2'](x)
+        if self.norm == 'in':  #IN needs channel dim
+            x = self.layers[self.norm+'2'](x.unsqueeze_(1)).squeeze_(1)
+        else:
+            x = self.layers[self.norm+'2'](x)
+        x = SignActivation.apply(x)
+
+        x = x.view(x.size(0), -1)
+        x = self.layers['fc3'](x)
+        if self.norm == 'in':  #IN needs channel dim
+            x = self.layers[self.norm+'3'](x.unsqueeze_(1)).squeeze_(1)
+        else:
+            x = self.layers[self.norm+'3'](x)
+        return x
+
+    
+    def save_bn_states(self):
+        bn_states = []
+        if 'bn1' in self.layers.keys():
+            for l in range(self.hidden_layers+1):
+                bn = copy.deepcopy(self.layers['bn'+str(l+1)].state_dict())
+                bn_states.append(bn)
+        return bn_states
+
+    def load_bn_states(self, bn_states):
+        if 'bn1' in self.layers.keys():
+            for l in range(self.hidden_layers+1):
+                self.layers['bn'+str(l+1)].load_state_dict(bn_states[l])
+
+              
+ 
 class DNN(torch.nn.Module):
     """
     MyNet can consist either of fc layers followed by batchnorm, fc weights being either float kind="classical_bn" 

@@ -129,12 +129,14 @@ if args.net =='bnn':
     model = BNN( archi, init = args.init, width = args.init_width, norm = args.norm).to(device)
 elif args.net =='dnn':
     model = DNN( archi, init = args.init, width = args.init_width).to(device)
+elif args.net=='bcnn':
+    model = ConvBNN(init = args.init, width = args.init_width, norm=args.norm).to(device)
 
 meta = {}
 for n, p in model.named_parameters():
     index = int(n[9])
     p.newname = 'l'+str(index)
-    if 'fc' in n:
+    if ('fc' in n) or ('cv' in n):
         meta[p.newname] = args.meta[index-1] if len(args.meta)>1 else args.meta[0]
 
 
@@ -177,8 +179,9 @@ data = {}
 data['net'] = args.net
 data['scenario'] = args.scenario
 arch = ''
-for i in range(model.hidden_layers):
-    arch = arch + '-' + str(model.layers_dims[i+1])
+if not(args.net=='bcnn'):
+    for i in range(model.hidden_layers):
+       arch = arch + '-' + str(model.layers_dims[i+1])
 
 data['arch'] = arch[1:]
 data['norm'] = args.norm
