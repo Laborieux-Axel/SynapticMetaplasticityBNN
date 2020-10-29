@@ -176,10 +176,10 @@ def process_cifar100(n_subset):
         sub_Y_test = cifar100_Y_test[partition(cifar100_Y_test)]
 
         sub_dset_train = DatasetProcessing(sub_X_train, sub_Y_train)
-        sub_train_loader = torch.utils.data.DataLoader(sub_dset_train, batch_size=100, shuffle=True, num_workers=4)
+        sub_train_loader = torch.utils.data.DataLoader(sub_dset_train, batch_size=20, shuffle=True, num_workers=4)
 
         sub_dset_test = DatasetProcessing(sub_X_test, sub_Y_test)
-        sub_test_loader = torch.utils.data.DataLoader(sub_dset_test, batch_size=100, shuffle=False, num_workers=0)
+        sub_test_loader = torch.utils.data.DataLoader(sub_dset_test, batch_size=20, shuffle=False, num_workers=0)
 
         train_loader_list.append(sub_train_loader)
         test_loader_list.append(sub_test_loader)
