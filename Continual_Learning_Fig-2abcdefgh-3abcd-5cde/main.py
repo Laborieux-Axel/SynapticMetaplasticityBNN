@@ -192,7 +192,10 @@ for i in range(len(test_loader_list)):
 name = '_'+data['net']+'_'+data['arch']+'_'
 
 for t in range(len(task_names)):
-    name = name+task_names[t]+'-'
+    if ('cifar100' in task_names[t]) and ('cifar100' in name):
+        pass
+    else:
+        name = name+task_names[t]+'-'
 
 bn_states = []
 
@@ -223,7 +226,7 @@ for task_idx, task in enumerate(train_loader_list):
         data['epoch'].append(epoch)
         data['lr'].append(optimizer.param_groups[0]['lr'])
 
-        train_accuracy, train_loss = test(model, task, device)
+        train_accuracy, train_loss = test(model, task, device, verbose=True)
         
         data['acc_tr'].append(train_accuracy)
         data['loss_tr'].append(train_loss)
@@ -238,13 +241,13 @@ for task_idx, task in enumerate(train_loader_list):
             if args.scenario == 'task':
                 if other_task_idx>=task_idx:
                     model.load_bn_states(current_bn_state)
-                    test_accuracy, test_loss = test(model , other_task, device, verbose=True)
+                    test_accuracy, test_loss = test(model , other_task, device, verbose=(other_task_idx==task_idx))
                 else:
                     model.load_bn_states(bn_states[other_task_idx])
-                    test_accuracy, test_loss = test(model , other_task, device, verbose=True)
+                    test_accuracy, test_loss = test(model , other_task, device)
 
             elif args.scenario =='domain':
-                test_accuracy, test_loss = test(model, other_task, device)
+                test_accuracy, test_loss = test(model, other_task, device, verbose=True)
             
             data['acc_test_tsk_'+str(other_task_idx+1)].append(test_accuracy)
             data['loss_test_tsk_'+str(other_task_idx+1)].append(test_loss)
