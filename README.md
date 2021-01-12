@@ -58,22 +58,82 @@ python main.py --net 'dnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --m
 These runs (~1 hour) produce the data of Fig. 3(a), (b), (c), (d).
 
 ```
-#Fig. 3(a)
+#Fig. 4(a)
 python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.0 --epochs-per-task 50 --task-sequence MNIST FMNIST
 ```
 ```
-#Fig. 3(b)
+#Fig. 4(b)
 python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.5 --epochs-per-task 50 --task-sequence MNIST FMNIST
 ```
 ```
-#Fig. 3(c)
+#Supp. Fig. 6(c)
 python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.0 --epochs-per-task 50 --task-sequence FMNIST MNIST
 ```
 ```
-#Fig. 3(d)
+#Supp. Fig. 6(d)
 python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.5 --epochs-per-task 50 --task-sequence FMNIST MNIST  
 ```
 
+#### Interleaved training
+
+```
+#Fig 3(a-b)
+python main.py --net 'bnn' --hidden-layers 512 512 --lr 0.005 --decay 1e-8 --meta 1.35 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
+python main.py --net 'bnn' --hidden-layers 1024 1024 --lr 0.005 --decay 1e-8 --meta 1.35 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
+python main.py --net 'bnn' --hidden-layers 2048 2048 --lr 0.005 --decay 1e-8 --meta 1.35 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
+python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-8 --meta 1.35 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
+
+python main.py --net 'bnn' --hidden-layers 512 512 --lr 0.005 --decay 1e-8 --ewc --ewc-lambda 5e3 --meta 0.0 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
+python main.py --net 'bnn' --hidden-layers 1024 1024 --lr 0.005 --decay 1e-8 --ewc --ewc-lambda 5e3 --meta 0.0 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
+python main.py --net 'bnn' --hidden-layers 2048 2048 --lr 0.005 --decay 1e-8 --ewc --ewc-lambda 5e3 --meta 0.0 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
+python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-8 --ewc --ewc-lambda 5e3 --meta 0.0 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
+```
+
+```
+#Fig 3(c)
+python main.py --net 'bnn' --interleaved --hidden-layers 512 512 --lr 0.005 --decay 1e-8 --meta 0.0 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
+python main.py --net 'bnn' --interleaved --hidden-layers 1024 1024 --lr 0.005 --decay 1e-8 --meta 0.0 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
+python main.py --net 'bnn' --interleaved --hidden-layers 2048 2048 --lr 0.005 --decay 1e-8 --meta 0.0 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
+python main.py --net 'bnn' --interleaved --hidden-layers 4096 4096 --lr 0.005 --decay 1e-8 --meta 0.0 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
+```
+
+```
+#Fig 3(d)
+python main.py --net 'bnn' --interleaved --hidden-layers 512 512 --lr 0.005 --decay 1e-8 --meta 1.35 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
+python main.py --net 'bnn' --interleaved --hidden-layers 1024 1024 --lr 0.005 --decay 1e-8 --meta 1.35 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
+python main.py --net 'bnn' --interleaved --hidden-layers 2048 2048 --lr 0.005 --decay 1e-8 --meta 1.35 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
+python main.py --net 'bnn' --interleaved --hidden-layers 4096 4096 --lr 0.005 --decay 1e-8 --meta 1.35 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
+```
+
+#### BNN learning MNIST-USPS
+
+```
+#Fig. 4(c)
+python MNIST-USPS/main.py --net 'bcnn' --ch 1 12 20 30 --kr 4 4 4 --decay 1e-8 --norm 'bn' --lr 0.005 --meta 1.2 --epochs-per-task 240 --task-sequence 'MNIST' 'USPS'
+python MNIST-USPS/main.py --net 'bcnn' --ch 1 6 10 15 --kr 4 4 4 --norm 'bn' --lr 0.005 --meta 0.0 --epochs-per-task 240 --task-sequence 'USPS'
+python MNIST-USPS/main.py --net 'bcnn' --ch 1 6 10 15 --kr 4 4 4 --norm 'bn' --lr 0.005 --meta 0.0 --epochs-per-task 240 --task-sequence 'MNIST'
+```
+
+```
+#Fig. 4(d)
+python MNIST-USPS/main.py --net 'bcnn' --ch 1 10 15 20 --kr 4 4 4 --decay 1e-8 --norm 'bn' --lr 0.005 --meta 1.2 --epochs-per-task 240 --task-sequence 'MNIST' 'USPS'
+python MNIST-USPS/main.py --net 'bcnn' --ch 1 6 10 15 --kr 4 4 4 --norm 'bn' --lr 0.005 --meta 0.0 --epochs-per-task 240 --task-sequence 'USPS'
+python MNIST-USPS/main.py --net 'bcnn' --ch 1 6 10 15 --kr 4 4 4 --norm 'bn' --lr 0.005 --meta 0.0 --epochs-per-task 240 --task-sequence 'MNIST'
+```
+
+#### BNN learning CIFAR-10 and CIFAR-100 features
+
+```
+#Fig. 4(e-f)
+python main.py --net 'bnn' --norm 'bn' --decay 1e-8 --in-size 512 --hidden-layers 2048 --out-size 10 --lr 0.005 --meta 0.0 --epochs-per-task 10 --task-sequence 'vehicles' 'animals'
+python main.py --net 'bnn' --norm 'bn' --decay 1e-8 --in-size 512 --hidden-layers 2048 --out-size 10 --lr 0.005 --meta 1.8 --epochs-per-task 10 --task-sequence 'vehicles' 'animals'
+```
+
+```
+#Fig. 4(g-h)
+python main.py --net 'bnn' --norm 'in' --scenario 'domain' --in-size 512 --hidden-layers 2048 2048 --out-size 100 --lr 0.005 --meta 0.0 --epochs-per-task 20 --task-sequence 'cifar100-2'
+python main.py --net 'bnn' --norm 'in' --scenario 'domain' --in-size 512 --hidden-layers 2048 2048 --out-size 100 --lr 0.005 --meta 1.3 --epochs-per-task 20 --task-sequence 'cifar100-2'
+```
 
 #### Switching the sign of binary weights in a BNN  
 
