@@ -53,26 +53,6 @@ python main.py --net 'dnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --m
 python main.py --net 'dnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.35 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'  
 ```
 
-#### BNN learning MNIST-FMNIST  
-
-These runs (~1 hour) produce the data of Fig. 3(a), (b), (c), (d).
-
-```
-#Fig. 4(a)
-python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.0 --epochs-per-task 50 --task-sequence MNIST FMNIST
-```
-```
-#Fig. 4(b)
-python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.5 --epochs-per-task 50 --task-sequence MNIST FMNIST
-```
-```
-#Supp. Fig. 6(c)
-python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.0 --epochs-per-task 50 --task-sequence FMNIST MNIST
-```
-```
-#Supp. Fig. 6(d)
-python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.5 --epochs-per-task 50 --task-sequence FMNIST MNIST  
-```
 
 #### Interleaved training
 
@@ -103,6 +83,27 @@ python main.py --net 'bnn' --interleaved --hidden-layers 512 512 --lr 0.005 --de
 python main.py --net 'bnn' --interleaved --hidden-layers 1024 1024 --lr 0.005 --decay 1e-8 --meta 1.35 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
 python main.py --net 'bnn' --interleaved --hidden-layers 2048 2048 --lr 0.005 --decay 1e-8 --meta 1.35 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
 python main.py --net 'bnn' --interleaved --hidden-layers 4096 4096 --lr 0.005 --decay 1e-8 --meta 1.35 --epochs-per-task 40 --task-sequence 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST' 'pMNIST'
+```
+
+#### BNN learning MNIST-FMNIST  
+
+These runs (~1 hour) produce the data of Fig. 3(a), (b), (c), (d).
+
+```
+#Fig. 4(a)
+python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.0 --epochs-per-task 50 --task-sequence MNIST FMNIST
+```
+```
+#Fig. 4(b)
+python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.5 --epochs-per-task 50 --task-sequence MNIST FMNIST
+```
+```
+#Supp. Fig. 6(c)
+python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 0.0 --epochs-per-task 50 --task-sequence FMNIST MNIST
+```
+```
+#Supp. Fig. 6(d)
+python main.py --net 'bnn' --hidden-layers 4096 4096 --lr 0.005 --decay 1e-7 --meta 1.5 --epochs-per-task 50 --task-sequence FMNIST MNIST  
 ```
 
 #### BNN learning MNIST-USPS
