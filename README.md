@@ -1,5 +1,6 @@
 # Synaptic Metaplasticity in Binarized Neural Networks
 
+https://zenodo.org/badge/doi/10.5281/zenodo.4570357.svg
 This repository contains the code producing the figures of the __[paper](https://arxiv.org/abs/2003.03533)__ "Synaptic Metaplasticity in Binarized Neural Networks" (BNNs). A GPU is needed to run the simulations in a reasonable time. To set the environment run in your conda main environment (5 minutes needed):  
 ```
 conda config --add channels conda-forge  
