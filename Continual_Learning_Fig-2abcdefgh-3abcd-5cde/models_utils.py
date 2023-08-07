@@ -99,7 +99,7 @@ class BNN(torch.nn.Module):
         for layer in range(self.hidden_layers+1): 
             layer_list = layer_list + [(  ('fc'+str(layer+1) ) , BinarizeLinear(layers_dims[layer], layers_dims[layer+1], bias = False)) ]
             if norm == 'bn':
-                layer_list = layer_list + [(  (norm+str(layer+1) ) , torch.nn.BatchNorm1d(layers_dims[layer+1], affine = True, track_running_stats = True)) ]
+                layer_list = layer_list + [(  (norm+str(layer+1) ) , torch.nn.BatchNorm1d(layers_dims[layer+1], affine = True, track_running_stats = False)) ]
             elif norm == 'in':
                 layer_list = layer_list + [(  (norm+str(layer+1) ) , torch.nn.InstanceNorm1d(layers_dims[layer+1], affine = False, track_running_stats = False)) ]
 

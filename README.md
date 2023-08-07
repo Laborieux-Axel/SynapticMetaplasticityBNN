@@ -9,6 +9,8 @@ conda activate environment_name
 conda install pytorch==1.1.0 torchvision==0.3.0 -c pytorch
 ```
 
+UPDATE (08/2023): For newer versions of PyTorch, a numerical unstability in the running statistics of the BatchNorm causes issues when reproducing Fig. 2a. This can be worked around by setting the `track_running_stats` argument of the BatchNorm to `False`. The repository has been updated with this change as of August 2023. Sorry for the inconvenience in reproducing the results and thanks to Emre Neftci for finding the cause of the issue.
+
 In each folder except Quadratic Binary Task, model_utils.py contains all classes and functions relevant to the model architectures and the train/test phase.
 data_utils.py contains functions relevant to data management. All the simulations produce csv file with accuracies and losses tracked at every epoch.  
 The code for BNN modules was adapted from [this repo](https://github.com/itayhubara/BinaryNet.pytorch).  
