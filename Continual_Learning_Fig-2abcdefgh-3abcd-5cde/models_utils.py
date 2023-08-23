@@ -112,6 +112,11 @@ class BNN(torch.nn.Module):
                 torch.nn.init.normal_(self.layers['fc'+str(layer+1)].weight, mean=0, std=width)
             if init == "uniform":
                 torch.nn.init.uniform_(self.layers['fc'+str(layer+1)].weight, a= -width/2, b=width/2)
+
+            # In recent versions of Pytorch, the BatchNorm weights are initialized to 1.
+            # In previous versions (e.g. 1.1.0), the weights were initialized uniformly.
+            if norm == "bn":
+                torch.nn.init.uniform_(self.layers[f'bn{layer+1})'].weight)
             
     def forward(self, x):
 
